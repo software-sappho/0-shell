@@ -1,0 +1,26 @@
+name: Sync to Gitea
+
+on:
+  push:
+    branches: ['**']
+    tags: ['**']
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push branches and tags to Gitea
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_USERNAME: ${{ secrets.GITEA_USERNAME }}
+          GITEA_REPO_URL: ${{ secrets.GITEA_REPO_URL }}
+        run: |
+          git remote add gitea "https://${GITEA_USERNAME}:${GITEA_TOKEN}@${GITEA_REPO_URL#https://}"
+          git push gitea --all --force
+          git push gitea --tags --force
