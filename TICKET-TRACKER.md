@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-20 (initial planning — 24 tickets scheduled, 3 in backlog)
+Last refreshed: 2026-07-21 (SH-001 done — SH-002/SH-003 unblocked)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -40,8 +40,8 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | Person | Active ticket | Next up |
 |--------|---------------|---------|
-| **Iana** | 🟢 SH-001 | SH-002 → SH-004 |
-| **Sofia** | — (blocked on SH-001) | SH-003 |
+| **Iana** | 🟡 SH-002 | SH-004 |
+| **Sofia** | 🟡 SH-003 | SH-005 |
 | **Andriana** | — (blocked on SH-004) | SH-006 → SH-007 |
 
 ---
@@ -101,7 +101,7 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-001 | 🟢 | **Cargo project & repo structure**: `Cargo.toml`, `src/main.rs`, `src/commands/` module stubs, `src/parser.rs`, `src/error.rs`, README stub, `cargo run` produces a running binary. | S | — | D1 | @iana |
+| SH-001 | ✅ | **Cargo project & repo structure**: `Cargo.toml`, `src/main.rs`, `src/commands/` module stubs, `src/parser.rs`, `src/error.rs`, README stub, `cargo run` produces a running binary. | S | — | D1 | @iana |
 
 ---
 
@@ -190,7 +190,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Deliverable | Description | Tickets | Status |
 |-------------|-------------|---------|--------|
-| D1 | Project builds & runs | SH-001 | 🟢 |
+| D1 | Project builds & runs | SH-001 | ✅ |
 | D2 | REPL, prompt, Ctrl+D | SH-002 | 🟡 |
 | D3 | Argument parsing | SH-003 | 🟡 |
 | D4 | Dispatch & not-found message | SH-004 | 🟡 |
@@ -235,7 +235,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Phase | Tickets |
 |-------|---------|
-| 0–1 | SH-001 🟢, SH-002 🟡, SH-004 🟡 |
+| 0–1 | SH-001 ✅, SH-002 🟡, SH-004 🟡 |
 | 2 | SH-012 🟡, SH-014 🟡, SH-015 🟡 |
 | 4 | SH-018 🟡, SH-023 🟡 |
 
@@ -262,9 +262,9 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 0 |
+| ✅ Done | 1 |
 | 🔵 In Review | 0 |
-| 🟢 In Progress | 1 |
+| 🟢 In Progress | 0 |
 | 🟡 To Do | 23 |
 | ⬜ Backlog | 3 |
 

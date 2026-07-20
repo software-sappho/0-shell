@@ -1,6 +1,6 @@
 # Board
 
-_Last updated: 2026-07-20_
+_Last updated: 2026-07-21_
 
 > **Dependency map:** see [DEPENDENCIES.md](./DEPENDENCIES.md) for which tickets block which.
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
@@ -8,11 +8,11 @@ _Last updated: 2026-07-20_
 
 | Person | Active ticket | Next up |
 |--------|---------------|---------|
-| **Iana** | [SH-001](./SH-001-project-setup.md) Cargo project & repo structure | SH-002 → SH-004 |
-| **Sofia** | — (blocked on SH-001) | SH-003 |
+| **Iana** | [SH-002](./SH-002-repl-loop.md) REPL loop, `$ ` prompt, Ctrl+D exit | SH-004 |
+| **Sofia** | [SH-003](./SH-003-tokenizer.md) Tokenizer — quoted & unquoted args | SH-005 |
 | **Andriana** | — (blocked on SH-004) | SH-006 → SH-007 |
 
-Project start. 1 In Progress, 23 To Do, 3 Backlog, 0 Done.
+SH-001 done. 0 In Progress, 23 To Do, 0 In Review, 3 Backlog, 1 Done.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -58,7 +58,7 @@ Project start. 1 In Progress, 23 To Do, 3 Backlog, 0 Done.
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-001](./SH-001-project-setup.md) | Cargo project & repo structure | P0 | foundation | @iana |
+| _empty_ | | | | |
 
 ## In Review
 
@@ -70,7 +70,7 @@ Project start. 1 In Progress, 23 To Do, 3 Backlog, 0 Done.
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| _empty_ | | | | |
+| [SH-001](./SH-001-project-setup.md) | Cargo project & repo structure | P0 | foundation | @iana |
 
 ---
 
