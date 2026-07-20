@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-21 (SH-001 done — SH-002/SH-003 unblocked)
+Last refreshed: 2026-07-21 (SH-002 done — Iana blocked on SH-003 for SH-004)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -40,7 +40,7 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | Person | Active ticket | Next up |
 |--------|---------------|---------|
-| **Iana** | 🟡 SH-002 | SH-004 |
+| **Iana** | — (blocked on SH-003) | SH-004 |
 | **Sofia** | 🟡 SH-003 | SH-005 |
 | **Andriana** | — (blocked on SH-004) | SH-006 → SH-007 |
 
@@ -111,7 +111,7 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-002 | 🟡 | **REPL loop**: print exactly `$ ` (with flush), block on `read_line`, execute only after Enter, `Ok(0)` from stdin (Ctrl+D) exits cleanly with status 0, empty/whitespace-only line reprints prompt. | M | SH-001 | D2 | @iana |
+| SH-002 | ✅ | **REPL loop**: print exactly `$ ` (with flush), block on `read_line`, execute only after Enter, `Ok(0)` from stdin (Ctrl+D) exits cleanly with status 0, empty/whitespace-only line reprints prompt. | M | SH-001 | D2 | @iana |
 | SH-003 | 🟡 | **Tokenizer**: split on whitespace, honour `"…"` and `'…'` grouping, handle unterminated quotes without panicking, return `Vec<String>`. Must make `echo "Hello There"` one arg and `echo something else` two. | M | SH-001 | D3 | @sofia |
 | SH-004 | 🟡 | **Dispatch & error model**: `Builtin` enum/table mapping name → handler `fn(&[String]) -> Result<(), ShellError>`; unknown name prints exactly `Command '<name>' not found`; all errors print to stderr as `<cmd>: <path>: <reason>` and return to prompt. No `unwrap`/`expect` on user input paths. | M | SH-002, SH-003 | D4 | @iana |
 
@@ -191,7 +191,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | Deliverable | Description | Tickets | Status |
 |-------------|-------------|---------|--------|
 | D1 | Project builds & runs | SH-001 | ✅ |
-| D2 | REPL, prompt, Ctrl+D | SH-002 | 🟡 |
+| D2 | REPL, prompt, Ctrl+D | SH-002 | ✅ |
 | D3 | Argument parsing | SH-003 | 🟡 |
 | D4 | Dispatch & not-found message | SH-004 | 🟡 |
 | D5 | `echo` | SH-005 | 🟡 |
@@ -235,7 +235,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Phase | Tickets |
 |-------|---------|
-| 0–1 | SH-001 ✅, SH-002 🟡, SH-004 🟡 |
+| 0–1 | SH-001 ✅, SH-002 ✅, SH-004 🟡 |
 | 2 | SH-012 🟡, SH-014 🟡, SH-015 🟡 |
 | 4 | SH-018 🟡, SH-023 🟡 |
 
@@ -262,10 +262,10 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 1 |
+| ✅ Done | 2 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 23 |
+| 🟡 To Do | 22 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |

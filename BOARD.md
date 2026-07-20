@@ -8,11 +8,11 @@ _Last updated: 2026-07-21_
 
 | Person | Active ticket | Next up |
 |--------|---------------|---------|
-| **Iana** | [SH-002](./SH-002-repl-loop.md) REPL loop, `$ ` prompt, Ctrl+D exit | SH-004 |
+| **Iana** | — (blocked on SH-003) | SH-004 |
 | **Sofia** | [SH-003](./SH-003-tokenizer.md) Tokenizer — quoted & unquoted args | SH-005 |
 | **Andriana** | — (blocked on SH-004) | SH-006 → SH-007 |
 
-SH-001 done. 0 In Progress, 23 To Do, 0 In Review, 3 Backlog, 1 Done.
+SH-002 done. 0 In Progress, 22 To Do, 0 In Review, 3 Backlog, 2 Done.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -30,7 +30,6 @@ SH-001 done. 0 In Progress, 23 To Do, 0 In Review, 3 Backlog, 1 Done.
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-002](./SH-002-repl-loop.md) | REPL loop, `$ ` prompt, Ctrl+D exit | P0 | foundation | @iana |
 | [SH-003](./SH-003-tokenizer.md) | Tokenizer — quoted & unquoted args | P0 | foundation | @sofia |
 | [SH-004](./SH-004-dispatch-errors.md) | Dispatch table & error model | P0 | foundation | @iana |
 | [SH-005](./SH-005-echo.md) | `echo` | P1 | foundation | @sofia |
@@ -71,6 +70,7 @@ SH-001 done. 0 In Progress, 23 To Do, 0 In Review, 3 Backlog, 1 Done.
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
 | [SH-001](./SH-001-project-setup.md) | Cargo project & repo structure | P0 | foundation | @iana |
+| [SH-002](./SH-002-repl-loop.md) | REPL loop, `$ ` prompt, Ctrl+D exit | P0 | foundation | @iana |
 
 ---
 
