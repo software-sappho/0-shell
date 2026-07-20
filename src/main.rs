@@ -2,8 +2,8 @@
 // no exec*/system/fork-exec, no shelling out to sh/bash/coreutils, ever.
 // Every builtin is implemented directly on std::fs / std::io.
 
-// Scaffolding stage (SH-001): parser/dispatch/commands are not wired
-// together yet — that happens in SH-002/003/004. Allow dead_code until then.
+// Scaffolding stage: command builtins are still stubs, so ShellError::Usage
+// has no constructor yet. Allow dead_code until the command tickets land.
 #![allow(dead_code)]
 
 mod commands;

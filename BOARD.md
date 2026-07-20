@@ -6,13 +6,9 @@ _Last updated: 2026-07-21_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-| Person | Active ticket | Next up |
-|--------|---------------|---------|
-| **Iana** | [SH-004](./SH-004-dispatch-errors.md) Dispatch table & error model | SH-013 |
-| **Sofia** | — (blocked on SH-004) | SH-010 |
-| **Andriana** | — (blocked on SH-004) | SH-006 |
+**Status:** Foundation phase (SH-001–SH-004) is done. Phase 2 is open — every remaining ticket is unassigned and unclaimed.
 
-SH-003 done. 0 In Progress, 21 To Do, 0 In Review, 3 Backlog, 3 Done.
+4 Done, 20 To Do, 0 In Progress, 0 In Review, 3 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -30,27 +26,26 @@ SH-003 done. 0 In Progress, 21 To Do, 0 In Review, 3 Backlog, 3 Done.
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-004](./SH-004-dispatch-errors.md) | Dispatch table & error model | P0 | foundation | @iana |
-| [SH-005](./SH-005-echo.md) | `echo` | P1 | foundation | @sofia |
-| [SH-006](./SH-006-pwd-exit.md) | `pwd` & `exit` | P1 | navigation | @andriana |
-| [SH-007](./SH-007-cd.md) | `cd` (bare → `$HOME`, rel & abs) | P1 | navigation | @andriana |
-| [SH-008](./SH-008-mkdir.md) | `mkdir` | P1 | fs-write | @sofia |
-| [SH-009](./SH-009-cat.md) | `cat` | P1 | fs-read | @sofia |
-| [SH-010](./SH-010-ls-plain.md) | `ls` plain listing | P1 | fs-read | @sofia |
-| [SH-011](./SH-011-ls-flags.md) | `ls -a` / `-F` flags | P1 | fs-read | @sofia |
-| [SH-012](./SH-012-ls-long.md) | `ls -l` long format | P1 | fs-read | @iana |
-| [SH-013](./SH-013-cp.md) | `cp` | P1 | fs-write | @iana |
-| [SH-014](./SH-014-mv.md) | `mv` | P1 | fs-write | @iana |
-| [SH-015](./SH-015-rm.md) | `rm` / `rm -r` | P1 | fs-write | @iana |
-| [SH-016](./SH-016-audit-dry-run.md) | Audit dry-run vs real bash | P1 | qa | @andriana |
-| [SH-017](./SH-017-readme.md) | README / usage docs | P1 | docs | @sofia |
-| [SH-018](./SH-018-bonus-sigint.md) | Ctrl+C handling (bonus) | P2 | bonus | @iana |
-| [SH-019](./SH-019-bonus-prompt-cwd.md) | Current dir in prompt (bonus) | P2 | bonus | @sofia |
-| [SH-020](./SH-020-bonus-history.md) | Command history (bonus) | P2 | bonus | @iana |
-| [SH-021](./SH-021-bonus-env-vars.md) | Environment variables (bonus) | P2 | bonus | @andriana |
-| [SH-022](./SH-022-bonus-colors.md) | Colorized output (bonus) | P2 | bonus | @sofia |
-| [SH-023](./SH-023-bonus-help.md) | `help` command (bonus) | P2 | bonus | @iana |
-| [SH-024](./SH-024-bonus-chaining.md) | Command chaining `;` (bonus) | P2 | bonus | @andriana |
+| [SH-005](./SH-005-echo.md) | `echo` | P1 | foundation | — |
+| [SH-006](./SH-006-pwd-exit.md) | `pwd` & `exit` | P1 | navigation | — |
+| [SH-007](./SH-007-cd.md) | `cd` (bare → `$HOME`, rel & abs) | P1 | navigation | — |
+| [SH-008](./SH-008-mkdir.md) | `mkdir` | P1 | fs-write | — |
+| [SH-009](./SH-009-cat.md) | `cat` | P1 | fs-read | — |
+| [SH-010](./SH-010-ls-plain.md) | `ls` plain listing | P1 | fs-read | — |
+| [SH-011](./SH-011-ls-flags.md) | `ls -a` / `-F` flags | P1 | fs-read | — |
+| [SH-012](./SH-012-ls-long.md) | `ls -l` long format | P1 | fs-read | — |
+| [SH-013](./SH-013-cp.md) | `cp` | P1 | fs-write | — |
+| [SH-014](./SH-014-mv.md) | `mv` | P1 | fs-write | — |
+| [SH-015](./SH-015-rm.md) | `rm` / `rm -r` | P1 | fs-write | — |
+| [SH-016](./SH-016-audit-dry-run.md) | Audit dry-run vs real bash | P1 | qa | — |
+| [SH-017](./SH-017-readme.md) | README / usage docs | P1 | docs | — |
+| [SH-018](./SH-018-bonus-sigint.md) | Ctrl+C handling (bonus) | P2 | bonus | — |
+| [SH-019](./SH-019-bonus-prompt-cwd.md) | Current dir in prompt (bonus) | P2 | bonus | — |
+| [SH-020](./SH-020-bonus-history.md) | Command history (bonus) | P2 | bonus | — |
+| [SH-021](./SH-021-bonus-env-vars.md) | Environment variables (bonus) | P2 | bonus | — |
+| [SH-022](./SH-022-bonus-colors.md) | Colorized output (bonus) | P2 | bonus | — |
+| [SH-023](./SH-023-bonus-help.md) | `help` command (bonus) | P2 | bonus | — |
+| [SH-024](./SH-024-bonus-chaining.md) | Command chaining `;` (bonus) | P2 | bonus | — |
 
 ## In Progress
 
@@ -68,9 +63,10 @@ SH-003 done. 0 In Progress, 21 To Do, 0 In Review, 3 Backlog, 3 Done.
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-001](./SH-001-project-setup.md) | Cargo project & repo structure | P0 | foundation | @andriana |
-| [SH-002](./SH-002-repl-loop.md) | REPL loop, `$ ` prompt, Ctrl+D exit | P0 | foundation | @andriana |
-| [SH-003](./SH-003-tokenizer.md) | Tokenizer — quoted & unquoted args | P0 | foundation | @andriana |
+| [SH-001](./SH-001-project-setup.md) | Cargo project & repo structure | P0 | foundation | — |
+| [SH-002](./SH-002-repl-loop.md) | REPL loop, `$ ` prompt, Ctrl+D exit | P0 | foundation | — |
+| [SH-003](./SH-003-tokenizer.md) | Tokenizer — quoted & unquoted args | P0 | foundation | — |
+| [SH-004](./SH-004-dispatch-errors.md) | Dispatch table & error model | P0 | foundation | — |
 
 ---
 

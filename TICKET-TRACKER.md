@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-21 (SH-003 done, foundation complete — ownership rebalanced: Andriana owns foundation, Iana starts SH-004)
+Last refreshed: 2026-07-21 (SH-004 done, foundation complete — Phase 2 open and unassigned)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -32,17 +32,9 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 ## 2) Team Assignment
 
-| Person | Handle | Focus Area | Tickets |
-|--------|--------|------------|---------|
-| **Iana** | `@iana` | Dispatch & error model, destructive fs ops, `ls -l` | SH-004, SH-012, SH-013, SH-014, SH-015, SH-018, SH-020, SH-023 |
-| **Sofia** | `@sofia` | `echo`/`mkdir`/`cat`, `ls` listing, docs | SH-005, SH-008, SH-009, SH-010, SH-011, SH-017, SH-019, SH-022 |
-| **Andriana** | `@andriana` | Foundation (bootstrap, REPL, tokenizer), navigation, audit QA | SH-001, SH-002, SH-003, SH-006, SH-007, SH-016, SH-021, SH-024 |
-
-| Person | Active ticket | Next up |
-|--------|---------------|---------|
-| **Iana** | 🟡 SH-004 | SH-013 |
-| **Sofia** | — (blocked on SH-004) | SH-010 |
-| **Andriana** | — (blocked on SH-004) | SH-006 |
+The foundation phase (SH-001–SH-004) is complete. Phase 2 onward is unassigned
+and open to claim — no ticket has an owner yet. Whoever picks up a ticket
+should update its Assignee cell in the tables below.
 
 ---
 
@@ -101,7 +93,7 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-001 | ✅ | **Cargo project & repo structure**: `Cargo.toml`, `src/main.rs`, `src/commands/` module stubs, `src/parser.rs`, `src/error.rs`, README stub, `cargo run` produces a running binary. | S | — | D1 | @andriana |
+| SH-001 | ✅ | **Cargo project & repo structure**: `Cargo.toml`, `src/main.rs`, `src/commands/` module stubs, `src/parser.rs`, `src/error.rs`, README stub, `cargo run` produces a running binary. | S | — | D1 | — |
 
 ---
 
@@ -111,9 +103,9 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-002 | ✅ | **REPL loop**: print exactly `$ ` (with flush), block on `read_line`, execute only after Enter, `Ok(0)` from stdin (Ctrl+D) exits cleanly with status 0, empty/whitespace-only line reprints prompt. | M | SH-001 | D2 | @andriana |
-| SH-003 | ✅ | **Tokenizer**: split on whitespace, honour `"…"` and `'…'` grouping, handle unterminated quotes without panicking, return `Vec<String>`. Must make `echo "Hello There"` one arg and `echo something else` two. | M | SH-001 | D3 | @andriana |
-| SH-004 | 🟡 | **Dispatch & error model**: `Builtin` enum/table mapping name → handler `fn(&[String]) -> Result<(), ShellError>`; unknown name prints exactly `Command '<name>' not found`; all errors print to stderr as `<cmd>: <path>: <reason>` and return to prompt. No `unwrap`/`expect` on user input paths. | M | SH-002, SH-003 | D4 | @iana |
+| SH-002 | ✅ | **REPL loop**: print exactly `$ ` (with flush), block on `read_line`, execute only after Enter, `Ok(0)` from stdin (Ctrl+D) exits cleanly with status 0, empty/whitespace-only line reprints prompt. | M | SH-001 | D2 | — |
+| SH-003 | ✅ | **Tokenizer**: split on whitespace, honour `"…"` and `'…'` grouping, handle unterminated quotes without panicking, return `Vec<String>`. Must make `echo "Hello There"` one arg and `echo something else` two. | M | SH-001 | D3 | — |
+| SH-004 | ✅ | **Dispatch & error model**: `Builtin` enum/table mapping name → handler `fn(&[String]) -> Result<(), ShellError>`; unknown name prints exactly `Command '<name>' not found`; all errors print to stderr as `<cmd>: <path>: <reason>` and return to prompt. No `unwrap`/`expect` on user input paths. | M | SH-002, SH-003 | D4 | — |
 
 ---
 
@@ -123,17 +115,17 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-005 | 🟡 | **echo**: join args with a single space + trailing `\n`; quotes already stripped by SH-003. Verify `echo "something!"` and `echo something else` byte-match bash. | S | SH-004 | D5 | @sofia |
-| SH-006 | 🟡 | **pwd & exit**: `pwd` via `env::current_dir()`; `exit` terminates the process cleanly (optional numeric status arg) and returns control to the parent shell. | S | SH-004 | D6 | @andriana |
-| SH-007 | 🟡 | **cd**: bare `cd` → `$HOME`; relative and absolute paths via `env::set_current_dir`; errors: `cd: <path>: No such file or directory`, `Not a directory`, `Permission denied`. Confirm with `pwd` after nested `mkdir`. | M | SH-004, SH-006 | D7 | @andriana |
-| SH-008 | 🟡 | **mkdir**: `fs::create_dir` per operand, multiple operands in one call; error `mkdir: cannot create directory '<x>': File exists`. Two separate `mkdir` calls must yield two independent dirs. | S | SH-004 | D8 | @sofia |
-| SH-009 | 🟡 | **cat**: stream file bytes to stdout unmodified (no added/stripped newline), multiple operands concatenated, directory operand → `cat: <x>: Is a directory`. Must byte-match real `cat`. | M | SH-004 | D9 | @sofia |
-| SH-010 | 🟡 | **ls (plain)**: read dir entries, hide dotfiles, sort by name (bytewise, matching `ls` default), print columnized or one-per-line; bare `ls` and `ls <dir>` and `ls <file>`. | M | SH-004 | D10 | @sofia |
-| SH-011 | 🟡 | **ls flags -a / -F**: flag parsing incl. combined forms (`-la`, `-l -a -F`); `-a` shows `.`/`..`/dotfiles; `-F` appends `/` dir, `*` exec, `@` symlink. | M | SH-010 | D11 | @sofia |
-| SH-012 | 🟡 | **ls -l long format**: `total <blocks>`, mode string (`drwxr-xr-x`) from `MetadataExt::mode()`, link count, uid/gid → names via `/etc/passwd`+`/etc/group` parsing (no `getpwuid` shell-out), size, `Mon DD HH:MM` mtime, column alignment. | L | SH-010, SH-011 | D11 | @iana |
-| SH-013 | 🟡 | **cp**: `cp <src> <dst>`; if dst is an existing directory, copy into it preserving basename; preserve contents and mode; error on missing src / dir src without `-r`. Audit case: `cp new_doc.txt ../new_folder2`. | M | SH-004 | D12 | @iana |
-| SH-014 | 🟡 | **mv**: `fs::rename` fast path; fall back to copy+delete across filesystems; dst-is-directory → move into it. Audit case: `mv new_folder2 new_folder1` nests the directory. | M | SH-004, SH-013 | D13 | @iana |
-| SH-015 | 🟡 | **rm / rm -r**: file removal by default; `rm: cannot remove '<x>': Is a directory` without `-r`; `-r` walks depth-first and removes children before parents. Audit case: `rm -r new_folder1`. | M | SH-004 | D14 | @iana |
+| SH-005 | 🟡 | **echo**: join args with a single space + trailing `\n`; quotes already stripped by SH-003. Verify `echo "something!"` and `echo something else` byte-match bash. | S | SH-004 | D5 | — |
+| SH-006 | 🟡 | **pwd & exit**: `pwd` via `env::current_dir()`; `exit` terminates the process cleanly (optional numeric status arg) and returns control to the parent shell. | S | SH-004 | D6 | — |
+| SH-007 | 🟡 | **cd**: bare `cd` → `$HOME`; relative and absolute paths via `env::set_current_dir`; errors: `cd: <path>: No such file or directory`, `Not a directory`, `Permission denied`. Confirm with `pwd` after nested `mkdir`. | M | SH-004, SH-006 | D7 | — |
+| SH-008 | 🟡 | **mkdir**: `fs::create_dir` per operand, multiple operands in one call; error `mkdir: cannot create directory '<x>': File exists`. Two separate `mkdir` calls must yield two independent dirs. | S | SH-004 | D8 | — |
+| SH-009 | 🟡 | **cat**: stream file bytes to stdout unmodified (no added/stripped newline), multiple operands concatenated, directory operand → `cat: <x>: Is a directory`. Must byte-match real `cat`. | M | SH-004 | D9 | — |
+| SH-010 | 🟡 | **ls (plain)**: read dir entries, hide dotfiles, sort by name (bytewise, matching `ls` default), print columnized or one-per-line; bare `ls` and `ls <dir>` and `ls <file>`. | M | SH-004 | D10 | — |
+| SH-011 | 🟡 | **ls flags -a / -F**: flag parsing incl. combined forms (`-la`, `-l -a -F`); `-a` shows `.`/`..`/dotfiles; `-F` appends `/` dir, `*` exec, `@` symlink. | M | SH-010 | D11 | — |
+| SH-012 | 🟡 | **ls -l long format**: `total <blocks>`, mode string (`drwxr-xr-x`) from `MetadataExt::mode()`, link count, uid/gid → names via `/etc/passwd`+`/etc/group` parsing (no `getpwuid` shell-out), size, `Mon DD HH:MM` mtime, column alignment. | L | SH-010, SH-011 | D11 | — |
+| SH-013 | 🟡 | **cp**: `cp <src> <dst>`; if dst is an existing directory, copy into it preserving basename; preserve contents and mode; error on missing src / dir src without `-r`. Audit case: `cp new_doc.txt ../new_folder2`. | M | SH-004 | D12 | — |
+| SH-014 | 🟡 | **mv**: `fs::rename` fast path; fall back to copy+delete across filesystems; dst-is-directory → move into it. Audit case: `mv new_folder2 new_folder1` nests the directory. | M | SH-004, SH-013 | D13 | — |
+| SH-015 | 🟡 | **rm / rm -r**: file removal by default; `rm: cannot remove '<x>': Is a directory` without `-r`; `-r` walks depth-first and removes children before parents. Audit case: `rm -r new_folder1`. | M | SH-004 | D14 | — |
 
 ---
 
@@ -143,8 +135,8 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-016 | 🟡 | **Audit dry-run**: walk the 12-point checklist side-by-side against a real terminal, diff outputs, log failures as follow-up tickets. Includes crash-hunt pass: bad flags, missing operands, `/root`, non-UTF-8 filenames, very long input. | M | SH-005–SH-015 | D15 | @andriana |
-| SH-017 | 🟡 | **README / usage docs**: build & run instructions, supported commands and flags, known deviations from GNU coreutils, bonus feature list. | S | SH-005–SH-015 | — | @sofia |
+| SH-016 | 🟡 | **Audit dry-run**: walk the 12-point checklist side-by-side against a real terminal, diff outputs, log failures as follow-up tickets. Includes crash-hunt pass: bad flags, missing operands, `/root`, non-UTF-8 filenames, very long input. | M | SH-005–SH-015 | D15 | — |
+| SH-017 | 🟡 | **README / usage docs**: build & run instructions, supported commands and flags, known deviations from GNU coreutils, bonus feature list. | S | SH-005–SH-015 | — | — |
 
 ---
 
@@ -154,13 +146,13 @@ Byte-for-byte output parity with real `bash` is required wherever the audit comp
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-018 | 🟡 | **Ctrl+C (SIGINT)**: install handler via `signal`/`sigaction`; cancel the current line, print a fresh prompt, never exit or unwind through the loop. | M | SH-002 | B1 | @iana |
-| SH-019 | 🟡 | **Prompt with cwd**: `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, updates after `cd`. | S | SH-007 | B2 | @sofia |
-| SH-020 | 🟡 | **Command history**: in-memory ring + ↑/↓ recall (raw mode), optional persistence to `~/.0shell_history`. | M | SH-002 | B3 | @iana |
-| SH-021 | 🟡 | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | @andriana |
-| SH-022 | 🟡 | **Colorized output**: ANSI colors for directories/executables in `ls`, red for errors; suppress when stdout is not a TTY. | S | SH-010, SH-011 | B5 | @sofia |
-| SH-023 | 🟡 | **help command**: list every builtin with flags and a one-line description; `help <cmd>` for detail. | S | SH-004 | B6 | @iana |
-| SH-024 | 🟡 | **Command chaining `;`**: split the line into sequential commands before tokenizing; each runs in order, a failure does not abort the rest. | M | SH-003, SH-004 | B7 | @andriana |
+| SH-018 | 🟡 | **Ctrl+C (SIGINT)**: install handler via `signal`/`sigaction`; cancel the current line, print a fresh prompt, never exit or unwind through the loop. | M | SH-002 | B1 | — |
+| SH-019 | 🟡 | **Prompt with cwd**: `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, updates after `cd`. | S | SH-007 | B2 | — |
+| SH-020 | 🟡 | **Command history**: in-memory ring + ↑/↓ recall (raw mode), optional persistence to `~/.0shell_history`. | M | SH-002 | B3 | — |
+| SH-021 | 🟡 | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | — |
+| SH-022 | 🟡 | **Colorized output**: ANSI colors for directories/executables in `ls`, red for errors; suppress when stdout is not a TTY. | S | SH-010, SH-011 | B5 | — |
+| SH-023 | 🟡 | **help command**: list every builtin with flags and a one-line description; `help <cmd>` for detail. | S | SH-004 | B6 | — |
+| SH-024 | 🟡 | **Command chaining `;`**: split the line into sequential commands before tokenizing; each runs in order, a failure does not abort the rest. | M | SH-003, SH-004 | B7 | — |
 
 ---
 
@@ -193,7 +185,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D1 | Project builds & runs | SH-001 | ✅ |
 | D2 | REPL, prompt, Ctrl+D | SH-002 | ✅ |
 | D3 | Argument parsing | SH-003 | ✅ |
-| D4 | Dispatch & not-found message | SH-004 | 🟡 |
+| D4 | Dispatch & not-found message | SH-004 | ✅ |
 | D5 | `echo` | SH-005 | 🟡 |
 | D6 | `pwd`, `exit` | SH-006 | 🟡 |
 | D7 | `cd` | SH-007 | 🟡 |
@@ -218,43 +210,21 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-| Order | Ticket | Who | Unblocks |
-|-------|--------|-----|----------|
-| 1 | SH-001 | @andriana | everything |
-| 2 | SH-003 | @andriana | SH-004 (can start in parallel with SH-002) |
-| 3 | SH-002 | @andriana | SH-004, SH-018, SH-020 |
-| 4 | SH-004 | @iana | all of Phase 2 |
-| 5 | SH-010 | @sofia | SH-011, SH-012, SH-022 |
-| 6 | SH-006 → SH-007 | @andriana | audit items 5–6 |
+Foundation is done. These seven tickets have no ticket-level blocker left and
+can be claimed right now, in any order and by anyone:
 
----
+| Ticket | Unblocks |
+|--------|----------|
+| SH-005 | SH-016 |
+| SH-006 | SH-007, SH-016 |
+| SH-008 | SH-016 |
+| SH-009 | SH-016 |
+| SH-010 | SH-011, SH-012, SH-016, SH-022 |
+| SH-013 | SH-014, SH-016 |
+| SH-015 | SH-016 |
 
-## Summary by Person
-
-### Iana — 8 tickets
-
-| Phase | Tickets |
-|-------|---------|
-| 1 | SH-004 🟡 |
-| 2 | SH-012 🟡, SH-013 🟡, SH-014 🟡, SH-015 🟡 |
-| 4 | SH-018 🟡, SH-020 🟡, SH-023 🟡 |
-
-### Sofia — 8 tickets
-
-| Phase | Tickets |
-|-------|---------|
-| 2 | SH-005 🟡, SH-008 🟡, SH-009 🟡, SH-010 🟡, SH-011 🟡 |
-| 3 | SH-017 🟡 |
-| 4 | SH-019 🟡, SH-022 🟡 |
-
-### Andriana — 8 tickets
-
-| Phase | Tickets |
-|-------|---------|
-| 0–1 | SH-001 ✅, SH-002 ✅, SH-003 ✅ |
-| 2 | SH-006 🟡, SH-007 🟡 |
-| 3 | SH-016 🟡 |
-| 4 | SH-021 🟡, SH-024 🟡 |
+SH-007 opens once SH-006 is claimed and done; SH-011 (then SH-012) open once
+SH-010 lands; SH-014 opens once SH-013 lands.
 
 ---
 
@@ -262,10 +232,10 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 3 |
+| ✅ Done | 4 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 21 |
+| 🟡 To Do | 20 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -285,7 +255,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## Load balance note
 
-Work splits 8 / 8 / 8 by ticket count. Andriana now owns the entire foundation phase (SH-001, SH-002, SH-003) solo, plus navigation (SH-006, SH-007), audit QA (SH-016), and two bonus tickets — she's the one everyone else is blocked behind until SH-003 lands. Iana owns the dispatch gate (SH-004), the destructive fs commands (`cp`, `mv`, `rm`), and the single heaviest ticket in the project, `ls -l` (SH-012) — though she can't start SH-012 until Sofia's flag parser (SH-011) exists. Sofia owns the `ls` chain (SH-010 → SH-011), `echo`/`mkdir`/`cat`, and docs (SH-017). Iana and Sofia are both idle until Andriana's foundation work clears SH-004.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Twenty scheduled tickets remain, most of them independent, and the split should be agreed by whoever picks them up — not prescribed here. The one thing worth flagging: the `ls` chain (SH-010 → SH-011 → SH-012) is the longest remaining sequence and the biggest audit risk, so it should be claimed first rather than left for later.
 
 ---
 

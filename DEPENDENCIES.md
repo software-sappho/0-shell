@@ -170,15 +170,11 @@ With 3 people, shorten calendar time by running **SH-003 alongside SH-002**, the
 
 ---
 
-## Parallel work example (team)
+## Status
 
-| Person | Week 1 | Week 2 | Week 3 |
-|--------|--------|--------|--------|
-| **Andriana** | SH-001 → SH-002 → SH-003 | SH-006 → SH-007 | SH-016, SH-021, SH-024 (bonus) |
-| **Iana** | *(blocked until SH-003)* | SH-004 → SH-013 → SH-014, SH-015 | SH-012, SH-018, SH-020, SH-023 (bonus) |
-| **Sofia** | *(blocked until SH-004)* | SH-005, SH-008, SH-009, SH-010 → SH-011 | SH-012 unblocked for Iana, SH-017, SH-019, SH-022 (bonus) |
-
-**Now:** Andriana owns the whole foundation phase — **SH-001 → SH-002 → SH-003** — solo this week. Iana and Sofia are both dependency-blocked until SH-004 lands (which itself waits on SH-002 and SH-003), so neither has unblocked work until Andriana clears the gate.
+SH-001–SH-004 (the whole foundation phase) are done. Phase 2 is open: all
+eleven command tickets are unblocked and unclaimed — see the "blocked by →
+unlocks" table above for what each one needs before it can start.
 
 ---
 
