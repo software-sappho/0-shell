@@ -8,6 +8,7 @@ use crate::parser::tokenize;
 pub fn run() -> ! {
     let stdin = io::stdin();
     let mut line = String::new();
+    let mut consecutive_read_errors = 0u32;
 
     loop {
         print!("$ ");
@@ -21,9 +22,16 @@ pub fn run() -> ! {
                 println!();
                 std::process::exit(0);
             }
-            Ok(_) => {}
+            Ok(_) => {
+                consecutive_read_errors = 0;
+            }
             Err(err) => {
+                consecutive_read_errors += 1;
                 eprintln!("0-shell: {err}");
+                if consecutive_read_errors >= 3 {
+                    eprintln!("0-shell: too many consecutive read errors, exiting");
+                    std::process::exit(1);
+                }
                 continue;
             }
         }

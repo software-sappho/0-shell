@@ -174,11 +174,11 @@ With 3 people, shorten calendar time by running **SH-003 alongside SH-002**, the
 
 | Person | Week 1 | Week 2 | Week 3 |
 |--------|--------|--------|--------|
-| **Iana** | SH-001 → SH-002 → SH-004 | SH-012 → SH-014 | SH-015, SH-018, SH-023 (bonus) |
-| **Sofia** | *(after SH-001)* SH-003 | SH-010 → SH-011, SH-005, SH-008 | SH-017, SH-019, SH-022 (bonus) |
-| **Andriana** | SH-016 test transcript draft | SH-006 → SH-007, SH-009, SH-013 | SH-016 run, SH-020, SH-021, SH-024 (bonus) |
+| **Andriana** | SH-001 → SH-002 → SH-003 | SH-006 → SH-007 | SH-016, SH-021, SH-024 (bonus) |
+| **Iana** | *(blocked until SH-003)* | SH-004 → SH-013 → SH-014, SH-015 | SH-012, SH-018, SH-020, SH-023 (bonus) |
+| **Sofia** | *(blocked until SH-004)* | SH-005, SH-008, SH-009, SH-010 → SH-011 | SH-012 unblocked for Iana, SH-017, SH-019, SH-022 (bonus) |
 
-**Now:** Iana has **SH-001** in progress. Sofia picks up SH-003 as soon as the crate compiles; Andriana is dependency-blocked until SH-004, so she writes the SH-016 audit transcript first rather than idling.
+**Now:** Andriana owns the whole foundation phase — **SH-001 → SH-002 → SH-003** — solo this week. Iana and Sofia are both dependency-blocked until SH-004 lands (which itself waits on SH-002 and SH-003), so neither has unblocked work until Andriana clears the gate.
 
 ---
 
