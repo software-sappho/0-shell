@@ -3,6 +3,11 @@
 use crate::commands;
 use crate::error::ShellError;
 
+/// Names accepted by [`dispatch`], sorted alphabetically.
+pub const BUILTIN_NAMES: &[&str] = &[
+    "cat", "cd", "cp", "echo", "exit", "help", "ls", "mkdir", "mv", "pwd", "rm",
+];
+
 /// What the REPL loop should do after a dispatched command runs.
 ///
 /// `exit` is the only builtin that can request loop termination, and it

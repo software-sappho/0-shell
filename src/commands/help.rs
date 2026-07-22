@@ -157,6 +157,7 @@ fn summary_text() -> String {
     }
     out.push_str("\nType `help name' for more information about each builtin.\n");
     out.push_str("Commands on one line may be chained with `;` (failures do not stop the rest).\n");
+    out.push_str("Tab completes builtin names and paths in an interactive TTY.\n");
     out
 }
 
@@ -199,6 +200,7 @@ mod tests {
         }
         assert!(text.contains("Type `help name'"));
         assert!(text.contains("chained with `;`"));
+        assert!(text.contains("Tab completes"));
     }
 
     #[test]

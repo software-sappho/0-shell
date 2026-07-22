@@ -8,6 +8,7 @@
 
 mod color;
 mod commands;
+mod complete;
 mod dispatch;
 mod error;
 mod history;

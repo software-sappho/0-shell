@@ -11,6 +11,9 @@ use crate::parser::{self, tokenize_with_status};
 use crate::signals;
 use crate::tty;
 
+#[cfg(unix)]
+use crate::complete::{self, Apply};
+
 pub fn run() -> ! {
     signals::install_sigint_handler();
 
@@ -226,7 +229,8 @@ fn unix_read_line_cooked(buf: &mut String) -> io::Result<usize> {
     Ok(n)
 }
 
-/// Interactive editor: printable chars, backspace, ↑/↓ history, Enter, Ctrl+D.
+/// Interactive editor: printable chars, backspace, Tab completion, ↑/↓ history,
+/// Enter, Ctrl+D.
 #[cfg(unix)]
 fn read_line_raw(buf: &mut String, hist: &History, prompt: &str) -> io::Result<usize> {
     let _raw = match tty::RawMode::enter() {
@@ -279,6 +283,24 @@ fn read_line_raw(buf: &mut String, hist: &History, prompt: &str) -> io::Result<u
                 buf.push('\n');
                 return Ok(buf.len());
             }
+            b'\t' => {
+                ensure_draft(&mut draft, &mut cursor, hist);
+                match complete::apply(&draft) {
+                    Apply::None => {
+                        let mut stderr = io::stderr().lock();
+                        let _ = stderr.write_all(b"\x07");
+                        let _ = stderr.flush();
+                    }
+                    Apply::Replace(new_line) => {
+                        draft = new_line;
+                        redraw_line(prompt, &draft)?;
+                    }
+                    Apply::List { line, matches } => {
+                        draft = line;
+                        show_completions(prompt, &draft, &matches)?;
+                    }
+                }
+            }
             0x7f | 0x08 => {
                 // Backspace
                 ensure_draft(&mut draft, &mut cursor, hist);
@@ -317,9 +339,6 @@ fn read_line_raw(buf: &mut String, hist: &History, prompt: &str) -> io::Result<u
                             Some(0) => 0,
                             Some(i) => i - 1,
                         };
-                        if cursor.is_none() {
-                            // stash draft
-                        }
                         cursor = Some(next);
                         let shown = hist.get(next).unwrap_or("").to_string();
                         redraw_line(prompt, &shown)?;
@@ -350,6 +369,26 @@ fn read_line_raw(buf: &mut String, hist: &History, prompt: &str) -> io::Result<u
             _ => {}
         }
     }
+}
+
+#[cfg(unix)]
+fn show_completions(prompt: &str, draft: &str, matches: &[String]) -> io::Result<()> {
+    let mut stderr = io::stderr().lock();
+    stderr.write_all(b"\n")?;
+    for (i, m) in matches.iter().enumerate() {
+        if i > 0 {
+            stderr.write_all(b"  ")?;
+        }
+        // Drop the synthetic trailing space used for "word finished".
+        let display = m.trim_end_matches(' ');
+        stderr.write_all(display.as_bytes())?;
+    }
+    stderr.write_all(b"\n")?;
+    stderr.write_all(prompt.as_bytes())?;
+    stderr.write_all(draft.as_bytes())?;
+    stderr.write_all(b"\x1b[K")?;
+    stderr.flush()?;
+    Ok(())
 }
 
 #[cfg(unix)]

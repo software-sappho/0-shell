@@ -6,9 +6,9 @@ _Last updated: 2026-07-22_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-**Status:** Mandatory path complete through SH-017. All scheduled bonuses (SH-018–SH-024) are done. Backlog: completion, pipes, redirection.
+**Status:** Mandatory path + scheduled bonuses complete. SH-025 (Tab completion) done. Backlog: pipes, redirection.
 
-24 Done, 0 To Do, 0 In Progress, 0 In Review, 3 Backlog.
+25 Done, 0 To Do, 0 In Progress, 0 In Review, 2 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -18,7 +18,6 @@ _Last updated: 2026-07-22_
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-025](./SH-025-bonus-autocompletion.md) | Auto-completion (bonus) | P3 | bonus | — |
 | [SH-026](./SH-026-bonus-piping.md) | Piping `\|` (bonus) | P3 | bonus | — |
 | [SH-027](./SH-027-bonus-redirection.md) | Redirection `>` `<` (bonus) | P3 | bonus | — |
 
@@ -68,6 +67,7 @@ _Last updated: 2026-07-22_
 | [SH-022](./SH-022-bonus-colors.md) | Colorized output (bonus) | P2 | bonus | — |
 | [SH-023](./SH-023-bonus-help.md) | `help` command (bonus) | P2 | bonus | — |
 | [SH-024](./SH-024-bonus-chaining.md) | Command chaining `;` (bonus) | P2 | bonus | — |
+| [SH-025](./SH-025-bonus-autocompletion.md) | Auto-completion (bonus) | P3 | bonus | — |
 
 ---
 

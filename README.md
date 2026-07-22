@@ -125,6 +125,7 @@ These are intentional scope limits or small behavioural differences:
 | Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
 | Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
 | Chaining | Unquoted `;` runs commands sequentially; a failure does not abort later ones. No pipes or redirections yet (backlog). |
+| Completion | Tab completes builtins (command position) and paths (arguments / path-like tokens) in a TTY. |
 | Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
 | History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
 
@@ -137,6 +138,7 @@ src/
   main.rs          Entry point → REPL
   repl.rs          Prompt, history-aware line editor, dispatch
   history.rs       In-memory history ring + `~/.0shell_history`
+  complete.rs      Tab completion (builtins + paths)
   tty.rs           Raw mode (termios) for interactive input
   signals.rs       SIGINT handler (Ctrl+C)
   parser.rs        Tokenizer (quotes)
@@ -164,7 +166,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B5 | Colorized `ls` / errors | SH-022 ✅ |
 | B6 | `help` command | SH-023 ✅ |
 | B7 | Command chaining with `;` | SH-024 ✅ |
-| B8 | Completion / pipes / redirection | SH-025–SH-027 (backlog) |
+| B8 | Completion / pipes / redirection | SH-025 ✅ · SH-026–027 |
 
 ## License
 
