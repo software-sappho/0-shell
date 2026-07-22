@@ -206,6 +206,10 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | B7 | Chaining `;` | SH-024 | 🟡 |
 | B8 | Completion / pipes / redirection | SH-025–027 | ⬜ |
 
+> Note for D15/SH-016: the `$ ` prompt (and the cosmetic EOF newline) print to
+> stderr, not stdout, so automated audit diffs can compare stdout against real
+> bash with no filtering.
+
 ---
 
 ## 6) Immediate Next Work Queue

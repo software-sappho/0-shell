@@ -11,15 +11,20 @@ pub fn run() -> ! {
     let mut consecutive_read_errors = 0u32;
 
     loop {
-        print!("$ ");
-        // stdout is line-buffered; the prompt has no trailing newline, so it
-        // won't reach the terminal until we flush explicitly.
-        let _ = io::stdout().flush();
+        // The prompt is cosmetic terminal output, not command output, so it
+        // goes to stderr — that keeps stdout clean for piping and for the
+        // SH-016 audit diffs against real bash.
+        {
+            let mut stderr = io::stderr().lock();
+            let _ = stderr.write_all(b"$ ");
+            let _ = stderr.flush();
+        }
 
         line.clear();
         match stdin.read_line(&mut line) {
             Ok(0) => {
-                println!();
+                let mut stderr = io::stderr().lock();
+                let _ = stderr.write_all(b"\n");
                 std::process::exit(0);
             }
             Ok(_) => {
