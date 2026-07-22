@@ -119,6 +119,14 @@ mod tests {
     }
 
     #[test]
+    fn rm_dispatches_usage_error_without_operands() {
+        assert!(matches!(
+            dispatch(&argv(&["rm"])),
+            ControlFlow::Continue(Err(ShellError::Usage(_)))
+        ));
+    }
+
+    #[test]
     fn cd_dispatches_and_restores_cwd() {
         struct RestoreCwd(std::path::PathBuf);
         impl Drop for RestoreCwd {
