@@ -9,9 +9,11 @@
 mod commands;
 mod dispatch;
 mod error;
+mod history;
 mod parser;
 mod repl;
 mod signals;
+mod tty;
 
 fn main() {
     repl::run();

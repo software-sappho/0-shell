@@ -6,9 +6,9 @@ _Last updated: 2026-07-22_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-**Status:** Mandatory path complete through SH-017. Bonuses SH-018 (Ctrl+C) and SH-019 (cwd prompt) are done. Next: history, env vars, etc.
+**Status:** Mandatory path complete through SH-017. Bonuses through SH-020 (history) are done. Next: env vars, colours, help, chaining.
 
-19 Done, 5 To Do, 0 In Progress, 0 In Review, 3 Backlog.
+20 Done, 4 To Do, 0 In Progress, 0 In Review, 3 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -26,7 +26,6 @@ _Last updated: 2026-07-22_
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-020](./SH-020-bonus-history.md) | Command history (bonus) | P2 | bonus | — |
 | [SH-021](./SH-021-bonus-env-vars.md) | Environment variables (bonus) | P2 | bonus | — |
 | [SH-022](./SH-022-bonus-colors.md) | Colorized output (bonus) | P2 | bonus | — |
 | [SH-023](./SH-023-bonus-help.md) | `help` command (bonus) | P2 | bonus | — |
@@ -67,6 +66,7 @@ _Last updated: 2026-07-22_
 | [SH-017](./SH-017-readme.md) | README / usage docs | P1 | docs | — |
 | [SH-018](./SH-018-bonus-sigint.md) | Ctrl+C handling (bonus) | P2 | bonus | — |
 | [SH-019](./SH-019-bonus-prompt-cwd.md) | Current dir in prompt (bonus) | P2 | bonus | — |
+| [SH-020](./SH-020-bonus-history.md) | Command history (bonus) | P2 | bonus | — |
 
 ---
 

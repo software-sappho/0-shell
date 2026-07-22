@@ -124,6 +124,7 @@ These are intentional scope limits or small behavioural differences:
 | Env / `$VAR` | Not expanded at parse time yet (bonus). |
 | Chaining | No `;`, pipes, or redirections yet (bonus / backlog). |
 | Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
+| History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
 
 Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), this shell aims for byte-for-byte parity with bash/coreutils under `LANG=C`.
 
@@ -132,7 +133,9 @@ Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), thi
 ```text
 src/
   main.rs          Entry point → REPL
-  repl.rs          Prompt, interruptible read, dispatch
+  repl.rs          Prompt, history-aware line editor, dispatch
+  history.rs       In-memory history ring + `~/.0shell_history`
+  tty.rs           Raw mode (termios) for interactive input
   signals.rs       SIGINT handler (Ctrl+C)
   parser.rs        Tokenizer (quotes)
   dispatch.rs      Builtin table
@@ -154,7 +157,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 |----|---------|--------|
 | B1 | Ctrl+C (SIGINT) without exiting | SH-018 ✅ |
 | B2 | Current directory in the prompt | SH-019 ✅ |
-| B3 | Command history | SH-020 |
+| B3 | Command history | SH-020 ✅ |
 | B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 |
 | B5 | Colorized `ls` / errors | SH-022 |
 | B6 | `help` command | SH-023 |
