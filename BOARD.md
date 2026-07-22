@@ -6,9 +6,9 @@ _Last updated: 2026-07-22_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-**Status:** Mandatory path complete through SH-017. Bonuses through SH-023 (`help`) are done. Next: chaining.
+**Status:** Mandatory path complete through SH-017. All scheduled bonuses (SH-018–SH-024) are done. Backlog: completion, pipes, redirection.
 
-23 Done, 1 To Do, 0 In Progress, 0 In Review, 3 Backlog.
+24 Done, 0 To Do, 0 In Progress, 0 In Review, 3 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -26,7 +26,7 @@ _Last updated: 2026-07-22_
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-024](./SH-024-bonus-chaining.md) | Command chaining `;` (bonus) | P2 | bonus | — |
+| _empty_ | | | | |
 
 ## In Progress
 
@@ -67,6 +67,7 @@ _Last updated: 2026-07-22_
 | [SH-021](./SH-021-bonus-env-vars.md) | Environment variables (bonus) | P2 | bonus | — |
 | [SH-022](./SH-022-bonus-colors.md) | Colorized output (bonus) | P2 | bonus | — |
 | [SH-023](./SH-023-bonus-help.md) | `help` command (bonus) | P2 | bonus | — |
+| [SH-024](./SH-024-bonus-chaining.md) | Command chaining `;` (bonus) | P2 | bonus | — |
 
 ---
 

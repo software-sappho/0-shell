@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use crate::color;
 use crate::dispatch::{dispatch, ControlFlow};
 use crate::history::{self, History};
-use crate::parser::tokenize_with_status;
+use crate::parser::{self, tokenize_with_status};
 use crate::signals;
 use crate::tty;
 
@@ -80,11 +80,27 @@ pub fn run() -> ! {
             let _ = hist.append_to_path(path, trimmed);
         }
 
-        let argv = match tokenize_with_status(trimmed, last_status) {
+        if let Some(code) = run_line(trimmed, &mut last_status) {
+            std::process::exit(code);
+        }
+    }
+}
+
+/// Run one input line, possibly containing `;`-chained commands.
+///
+/// Each segment is tokenized and dispatched in order. A failing command does
+/// not abort the rest. Returns `Some(code)` when `exit` requests termination.
+fn run_line(line: &str, last_status: &mut i32) -> Option<i32> {
+    for segment in parser::split_commands(line) {
+        if segment.is_empty() {
+            continue;
+        }
+
+        let argv = match tokenize_with_status(segment, *last_status) {
             Ok(argv) => argv,
             Err(err) => {
                 print_err(err.to_string());
-                last_status = 1;
+                *last_status = 1;
                 continue;
             }
         };
@@ -94,19 +110,20 @@ pub fn run() -> ! {
         }
 
         match dispatch(&argv) {
-            ControlFlow::Exit(code) => std::process::exit(code),
+            ControlFlow::Exit(code) => return Some(code),
             ControlFlow::Continue(Ok(())) => {
-                last_status = 0;
+                *last_status = 0;
             }
             ControlFlow::Continue(Err(err)) => {
                 print_err(err.to_string());
-                last_status = match &err {
+                *last_status = match &err {
                     crate::error::ShellError::NotFound(_) => 127,
                     _ => 1,
                 };
             }
         }
     }
+    None
 }
 
 /// Errors go to stderr; red when stderr is a TTY.
@@ -417,5 +434,41 @@ mod tests {
         let prompt = format!("{} $ ", display_cwd(Path::new("/tmp"), None));
         assert!(prompt.ends_with(" $ "));
         assert_eq!(prompt, "/tmp $ ");
+    }
+
+    #[test]
+    fn chaining_continues_after_a_failed_command() {
+        let mut status = 0;
+        let missing =
+            std::env::temp_dir().join(format!("0-shell-chain-missing-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&missing);
+        let path = missing.to_str().expect("utf8");
+        let line = format!("cd {path}; echo after");
+        assert_eq!(run_line(&line, &mut status), None);
+        assert_eq!(status, 0, "echo after should have succeeded");
+    }
+
+    #[test]
+    fn exit_in_a_chain_stops_later_commands() {
+        let mut status = 0;
+        assert_eq!(
+            run_line("echo before; exit 9; echo after", &mut status),
+            Some(9)
+        );
+    }
+
+    #[test]
+    fn failed_command_sets_status_used_by_next_segment() {
+        let mut status = 0;
+        assert_eq!(run_line("nosuchbuiltin42; echo ok", &mut status), None);
+        assert_eq!(status, 0);
+
+        assert_eq!(run_line("nosuchbuiltin42", &mut status), None);
+        assert_eq!(status, 127);
+        // Next segment would expand $? from that failure.
+        assert_eq!(
+            tokenize_with_status("echo $?", status).unwrap(),
+            vec!["echo", "127"]
+        );
     }
 }

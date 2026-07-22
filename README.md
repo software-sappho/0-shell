@@ -124,7 +124,7 @@ These are intentional scope limits or small behavioural differences:
 | `cd` | No `cd -` (previous directory). `~user` is not expanded. |
 | Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
 | Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
-| Chaining | No `;`, pipes, or redirections yet (bonus / backlog). |
+| Chaining | Unquoted `;` runs commands sequentially; a failure does not abort later ones. No pipes or redirections yet (backlog). |
 | Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
 | History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
 
@@ -163,7 +163,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 ✅ |
 | B5 | Colorized `ls` / errors | SH-022 ✅ |
 | B6 | `help` command | SH-023 ✅ |
-| B7 | Command chaining with `;` | SH-024 |
+| B7 | Command chaining with `;` | SH-024 ✅ |
 | B8 | Completion / pipes / redirection | SH-025–SH-027 (backlog) |
 
 ## License

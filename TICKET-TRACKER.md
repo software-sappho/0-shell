@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-23 (SH-023 done — help command)
+Last refreshed: 2026-07-23 (SH-024 done — command chaining with `;`)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -152,7 +152,7 @@ should update its Assignee cell in the tables below.
 | SH-021 | ✅ | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | — |
 | SH-022 | ✅ | **Colorized output**: ANSI colors for directories/executables in `ls`, red for errors; suppress when stdout is not a TTY. | S | SH-010, SH-011 | B5 | — |
 | SH-023 | ✅ | **help command**: list every builtin with flags and a one-line description; `help <cmd>` for detail. | S | SH-004 | B6 | — |
-| SH-024 | 🟡 | **Command chaining `;`**: split the line into sequential commands before tokenizing; each runs in order, a failure does not abort the rest. | M | SH-003, SH-004 | B7 | — |
+| SH-024 | ✅ | **Command chaining `;`**: split the line into sequential commands before tokenizing; each runs in order, a failure does not abort the rest. | M | SH-003, SH-004 | B7 | — |
 
 ---
 
@@ -203,7 +203,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | B4 | Env vars | SH-021 | ✅ |
 | B5 | Colors | SH-022 | ✅ |
 | B6 | `help` | SH-023 | ✅ |
-| B7 | Chaining `;` | SH-024 | 🟡 |
+| B7 | Chaining `;` | SH-024 | ✅ |
 | B8 | Completion / pipes / redirection | SH-025–027 | ⬜ |
 
 > Note for D15/SH-016: the `$ ` prompt (and the cosmetic EOF newline) print to
@@ -214,13 +214,13 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-Mandatory path through docs is complete. Bonus progress:
+Mandatory path through docs is complete. All scheduled bonuses (SH-018–SH-024) are ✅.
 
 | Ticket | Notes |
 |--------|-------|
-| SH-024 | Command chaining `;` |
+| SH-025–027 | Backlog: completion, pipes, redirection |
 
-SH-018–SH-023 are ✅.
+SH-018–SH-024 are ✅.
 
 ---
 
@@ -228,10 +228,10 @@ SH-018–SH-023 are ✅.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 23 |
+| ✅ Done | 24 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 1 |
+| 🟡 To Do | 0 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -251,7 +251,7 @@ SH-018–SH-023 are ✅.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Five scheduled tickets remain (one bonus + backlog). The mandatory path including the audit dry-run and README is complete; bonuses through `help` (SH-023) are done.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. All scheduled tickets through SH-024 are done; three backlog bonuses remain (completion, pipes, redirection).
 
 ---
 

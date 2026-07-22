@@ -6,10 +6,66 @@
 //!
 //! `$VAR` / `${VAR}` / `$?` expand outside single quotes (and inside double
 //! quotes). Unknown names expand to the empty string.
+//!
+//! Unquoted `;` splits a line into sequential commands (SH-024).
 
 use std::env;
 
 use crate::error::ShellError;
+
+/// Split `line` on unquoted `;` into command segments (whitespace-trimmed).
+///
+/// Empty segments (e.g. from `;;` or a trailing `;`) are retained as empty
+/// strings so the caller can treat them as no-ops.
+pub fn split_commands(line: &str) -> Vec<&str> {
+    let mut segments = Vec::new();
+    let mut start = 0usize;
+    let mut in_single = false;
+    let mut in_double = false;
+    let mut i = 0usize;
+
+    while i < line.len() {
+        let ch = line[i..].chars().next().unwrap();
+        let ch_len = ch.len_utf8();
+
+        if in_single {
+            if ch == '\'' {
+                in_single = false;
+            }
+            i += ch_len;
+            continue;
+        }
+        if in_double {
+            if ch == '"' {
+                in_double = false;
+            }
+            i += ch_len;
+            continue;
+        }
+
+        match ch {
+            '\'' => {
+                in_single = true;
+                i += ch_len;
+            }
+            '"' => {
+                in_double = true;
+                i += ch_len;
+            }
+            ';' => {
+                segments.push(line[start..i].trim());
+                i += ch_len;
+                start = i;
+            }
+            _ => {
+                i += ch_len;
+            }
+        }
+    }
+
+    segments.push(line[start..].trim());
+    segments
+}
 
 pub fn tokenize(line: &str) -> Result<Vec<String>, ShellError> {
     tokenize_with_status(line, 0)
@@ -289,5 +345,39 @@ mod tests {
     fn lone_dollar_stays_literal() {
         assert_eq!(tok("echo $"), vec!["echo", "$"]);
         assert_eq!(tok("echo $."), vec!["echo", "$."]);
+    }
+
+    #[test]
+    fn split_on_unquoted_semicolon() {
+        assert_eq!(split_commands("echo a; echo b"), vec!["echo a", "echo b"]);
+        assert_eq!(
+            split_commands("pwd ; ls -l ; echo hi"),
+            vec!["pwd", "ls -l", "echo hi"]
+        );
+    }
+
+    #[test]
+    fn semicolon_inside_quotes_is_literal() {
+        assert_eq!(
+            split_commands(r#"echo "a;b"; echo c"#),
+            vec![r#"echo "a;b""#, "echo c"]
+        );
+        assert_eq!(split_commands("echo 'a;b'"), vec!["echo 'a;b'"]);
+    }
+
+    #[test]
+    fn empty_segments_from_double_or_trailing_semicolon() {
+        assert_eq!(
+            split_commands("echo a;; echo b"),
+            vec!["echo a", "", "echo b"]
+        );
+        assert_eq!(split_commands("echo a;"), vec!["echo a", ""]);
+        assert_eq!(split_commands(";echo a"), vec!["", "echo a"]);
+    }
+
+    #[test]
+    fn no_semicolon_is_one_segment() {
+        assert_eq!(split_commands("echo hello"), vec!["echo hello"]);
+        assert_eq!(split_commands(""), vec![""]);
     }
 }

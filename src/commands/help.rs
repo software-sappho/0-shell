@@ -156,6 +156,7 @@ fn summary_text() -> String {
         ));
     }
     out.push_str("\nType `help name' for more information about each builtin.\n");
+    out.push_str("Commands on one line may be chained with `;` (failures do not stop the rest).\n");
     out
 }
 
@@ -197,6 +198,7 @@ mod tests {
             assert!(text.contains(name), "summary should mention {name}: {text}");
         }
         assert!(text.contains("Type `help name'"));
+        assert!(text.contains("chained with `;`"));
     }
 
     #[test]
