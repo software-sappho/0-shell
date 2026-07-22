@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-013 done — `cp`)
+Last refreshed: 2026-07-22 (SH-014 done — `mv`)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -124,7 +124,7 @@ should update its Assignee cell in the tables below.
 | SH-011 | ✅ | **ls flags -a / -F**: flag parsing incl. combined forms (`-la`, `-l -a -F`); `-a` shows `.`/`..`/dotfiles; `-F` appends `/` dir, `*` exec, `@` symlink. | M | SH-010 | D11 | — |
 | SH-012 | ✅ | **ls -l long format**: `total <blocks>`, mode string (`drwxr-xr-x`) from `MetadataExt::mode()`, link count, uid/gid → names via `/etc/passwd`+`/etc/group` parsing (no `getpwuid` shell-out), size, `Mon DD HH:MM` mtime, column alignment. | L | SH-010, SH-011 | D11 | — |
 | SH-013 | ✅ | **cp**: `cp <src> <dst>`; if dst is an existing directory, copy into it preserving basename; preserve contents and mode; error on missing src / dir src without `-r`. Audit case: `cp new_doc.txt ../new_folder2`. | M | SH-004 | D12 | — |
-| SH-014 | 🟡 | **mv**: `fs::rename` fast path; fall back to copy+delete across filesystems; dst-is-directory → move into it. Audit case: `mv new_folder2 new_folder1` nests the directory. | M | SH-004, SH-013 | D13 | — |
+| SH-014 | ✅ | **mv**: `fs::rename` fast path; fall back to copy+delete across filesystems; dst-is-directory → move into it. Audit case: `mv new_folder2 new_folder1` nests the directory. | M | SH-004, SH-013 | D13 | — |
 | SH-015 | 🟡 | **rm / rm -r**: file removal by default; `rm: cannot remove '<x>': Is a directory` without `-r`; `-r` walks depth-first and removes children before parents. Audit case: `rm -r new_folder1`. | M | SH-004 | D14 | — |
 
 ---
@@ -194,7 +194,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D10 | `ls` plain | SH-010 | ✅ |
 | D11 | `ls -l -a -F` | SH-011 ✅, SH-012 ✅ | ✅ |
 | D12 | `cp` | SH-013 | ✅ |
-| D13 | `mv` | SH-014 | 🟡 |
+| D13 | `mv` | SH-014 | ✅ |
 | D14 | `rm -r` | SH-015 | 🟡 |
 | D15 | Audit checklist verified | SH-016 | 🟡 |
 | B1 | Ctrl+C | SH-018 | 🟡 |
@@ -214,15 +214,14 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-The navigation stack, fs-read (`cat`/`ls`), `mkdir`, and `cp` (SH-013) are
-done. Claim these next:
+The navigation stack, fs-read, `mkdir`, `cp`, and `mv` (SH-014) are done.
+Claim this next:
 
 | Ticket | Unblocks |
 |--------|----------|
-| SH-014 | SH-016 |
 | SH-015 | SH-016 |
 
-SH-014 (`mv`) is unblocked now that SH-013 landed.
+After SH-015, SH-016 (audit dry-run) is unblocked.
 
 ---
 
@@ -230,10 +229,10 @@ SH-014 (`mv`) is unblocked now that SH-013 landed.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 13 |
+| ✅ Done | 14 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 11 |
+| 🟡 To Do | 10 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -253,7 +252,7 @@ SH-014 (`mv`) is unblocked now that SH-013 landed.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Fifteen scheduled tickets remain, most of them independent, and the split should be agreed by whoever picks them up — not prescribed here. The remaining audit-critical path is `mv`/`rm` (SH-014–SH-015) then the dry-run (SH-016).
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Fourteen scheduled tickets remain, most of them independent, and the split should be agreed by whoever picks them up — not prescribed here. The remaining audit-critical path is `rm` (SH-015) then the dry-run (SH-016).
 
 ---
 
