@@ -90,14 +90,24 @@ mod tests {
     // which is global state shared by every concurrently-running test
     // thread. See `cd_dispatches_and_restores_cwd` below for a dispatch-level
     // test of `cd` that saves and restores the directory safely.
+    //
+    // `cp` / `rm` / `mv` need operands; bare invocation is a usage error.
     #[test]
     fn every_non_exit_builtin_dispatches() {
-        for name in ["echo", "pwd", "ls", "cat", "cp", "rm", "mv", "mkdir"] {
+        for name in ["echo", "pwd", "ls", "cat", "mkdir"] {
             assert!(
                 matches!(dispatch(&argv(&[name])), ControlFlow::Continue(Ok(()))),
                 "expected {name} to dispatch to a builtin"
             );
         }
+    }
+
+    #[test]
+    fn cp_dispatches_usage_error_without_operands() {
+        assert!(matches!(
+            dispatch(&argv(&["cp"])),
+            ControlFlow::Continue(Err(ShellError::Usage(_)))
+        ));
     }
 
     #[test]
