@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-016 done — audit dry-run green)
+Last refreshed: 2026-07-22 (SH-017 done — README / usage docs)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -136,7 +136,7 @@ should update its Assignee cell in the tables below.
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
 | SH-016 | ✅ | **Audit dry-run**: walk the 12-point checklist side-by-side against a real terminal, diff outputs, log failures as follow-up tickets. Includes crash-hunt pass: bad flags, missing operands, `/root`, non-UTF-8 filenames, very long input. | M | SH-005–SH-015 | D15 | — |
-| SH-017 | 🟡 | **README / usage docs**: build & run instructions, supported commands and flags, known deviations from GNU coreutils, bonus feature list. | S | SH-005–SH-015 | — | — |
+| SH-017 | ✅ | **README / usage docs**: build & run instructions, supported commands and flags, known deviations from GNU coreutils, bonus feature list. | S | SH-005–SH-015 | — | — |
 
 ---
 
@@ -214,13 +214,13 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-Mandatory commands and the audit dry-run (SH-016) are done. Next:
+Mandatory path through docs is complete. Optional next work:
 
 | Ticket | Notes |
 |--------|-------|
-| SH-017 | README / usage docs |
+| SH-018+ | Bonus track (Ctrl+C, prompt cwd, history, …) |
 
-Bonus track (SH-018+) may start now that SH-016 is green.
+All of SH-001–SH-017 are ✅.
 
 ---
 
@@ -228,10 +228,10 @@ Bonus track (SH-018+) may start now that SH-016 is green.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 16 |
+| ✅ Done | 17 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 8 |
+| 🟡 To Do | 7 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -251,7 +251,7 @@ Bonus track (SH-018+) may start now that SH-016 is green.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Twelve scheduled tickets remain (docs + bonus). The mandatory command set and audit dry-run are complete — README (SH-017) and optional bonuses are next.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Eleven scheduled tickets remain (all bonus). The mandatory path including the audit dry-run and README is complete.
 
 ---
 
