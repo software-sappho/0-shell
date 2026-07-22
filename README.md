@@ -123,7 +123,7 @@ These are intentional scope limits or small behavioural differences:
 | Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
 | Env / `$VAR` | Not expanded at parse time yet (bonus). |
 | Chaining | No `;`, pipes, or redirections yet (bonus / backlog). |
-| Prompt | Fixed `$ ` (cwd in the prompt is a bonus). |
+| Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
 
 Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), this shell aims for byte-for-byte parity with bash/coreutils under `LANG=C`.
 
@@ -152,8 +152,8 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 
 | ID | Feature | Ticket |
 |----|---------|--------|
-| B1 | Ctrl+C (SIGINT) without exiting | SH-018 |
-| B2 | Current directory in the prompt | SH-019 |
+| B1 | Ctrl+C (SIGINT) without exiting | SH-018 ✅ |
+| B2 | Current directory in the prompt | SH-019 ✅ |
 | B3 | Command history | SH-020 |
 | B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 |
 | B5 | Colorized `ls` / errors | SH-022 |

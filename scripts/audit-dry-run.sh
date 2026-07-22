@@ -106,7 +106,7 @@ fi
 paths=$(run_shell "")
 stdout="${paths%%|*}"
 stderr="${paths##*|}"
-assert_contains D2 "$(cat "$stderr")" '$ ' "prompt printed to stderr"
+assert_contains D2 "$(cat "$stderr")" '$ ' "prompt printed to stderr (cwd + \$ )"
 # empty input still shows prompt; EOF adds cosmetic newline on stderr
 
 # --- D3 / D5: echo quoting ---

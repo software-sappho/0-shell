@@ -1,6 +1,8 @@
 //! REPL loop: print the prompt, read a line, tokenize, and dispatch.
 
+use std::env;
 use std::io::{self, ErrorKind, Write};
+use std::path::{Path, PathBuf};
 
 use crate::dispatch::{dispatch, ControlFlow};
 use crate::parser::tokenize;
@@ -18,7 +20,7 @@ pub fn run() -> ! {
         // SH-016 audit diffs against real bash.
         {
             let mut stderr = io::stderr().lock();
-            let _ = stderr.write_all(b"$ ");
+            let _ = stderr.write_all(format_prompt().as_bytes());
             let _ = stderr.flush();
         }
 
@@ -84,6 +86,44 @@ pub fn run() -> ! {
     }
 }
 
+/// `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, refreshed every loop
+/// so it tracks `cd`.
+fn format_prompt() -> String {
+    let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("?"));
+    let home = env::var_os("HOME").map(PathBuf::from);
+    format!("{} $ ", display_cwd(&cwd, home.as_deref()))
+}
+
+fn display_cwd(cwd: &Path, home: Option<&Path>) -> String {
+    let cwd_s = cwd.to_string_lossy();
+    match home {
+        Some(home) if !home.as_os_str().is_empty() => {
+            let home_s = home.to_string_lossy();
+            if cwd_s.as_ref() == home_s.as_ref() {
+                "~".to_string()
+            } else if let Some(rest) = cwd_s.strip_prefix(home_s.as_ref()) {
+                // Only collapse when HOME is a path prefix followed by a separator
+                // (or exact match above). Avoid turning `/home/me2` into `~2`
+                // when HOME is `/home/me`.
+                if let Some(stripped) = rest.strip_prefix('/') {
+                    format!("~/{stripped}")
+                } else if cfg!(windows) {
+                    if let Some(stripped) = rest.strip_prefix('\\') {
+                        format!("~/{stripped}")
+                    } else {
+                        cwd_s.into_owned()
+                    }
+                } else {
+                    cwd_s.into_owned()
+                }
+            } else {
+                cwd_s.into_owned()
+            }
+        }
+        _ => cwd_s.into_owned(),
+    }
+}
+
 /// Read one line from stdin. On Unix this uses raw `read(2)` so SIGINT can
 /// surface as `ErrorKind::Interrupted` (Rust's `read_line` retries EINTR).
 fn read_line_interruptible(buf: &mut String) -> io::Result<usize> {
@@ -137,4 +177,49 @@ fn unix_read_line(buf: &mut String) -> io::Result<usize> {
     let n = bytes.len();
     buf.push_str(&String::from_utf8_lossy(&bytes));
     Ok(n)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn home_alone_becomes_tilde() {
+        let home = Path::new("/home/tester");
+        assert_eq!(display_cwd(home, Some(home)), "~");
+    }
+
+    #[test]
+    fn home_subdir_uses_tilde_slash() {
+        let home = Path::new("/home/tester");
+        let cwd = Path::new("/home/tester/projects/0-shell");
+        assert_eq!(display_cwd(cwd, Some(home)), "~/projects/0-shell");
+    }
+
+    #[test]
+    fn outside_home_is_absolute() {
+        let home = Path::new("/home/tester");
+        let cwd = Path::new("/tmp");
+        assert_eq!(display_cwd(cwd, Some(home)), "/tmp");
+    }
+
+    #[test]
+    fn similar_prefix_is_not_collapsed() {
+        let home = Path::new("/home/me");
+        let cwd = Path::new("/home/me2/docs");
+        assert_eq!(display_cwd(cwd, Some(home)), "/home/me2/docs");
+    }
+
+    #[test]
+    fn missing_home_prints_absolute() {
+        let cwd = Path::new("/var/log");
+        assert_eq!(display_cwd(cwd, None), "/var/log");
+    }
+
+    #[test]
+    fn prompt_ends_with_dollar_space() {
+        let prompt = format!("{} $ ", display_cwd(Path::new("/tmp"), None));
+        assert!(prompt.ends_with(" $ "));
+        assert_eq!(prompt, "/tmp $ ");
+    }
 }
