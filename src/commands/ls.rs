@@ -1,9 +1,21 @@
-//! `ls` builtin: plain directory listing (no flags yet — see SH-011 / SH-012).
+//! `ls` builtin: directory listing with `-a` / `-F` (and `-l` parsed for SH-012).
 
 use std::fs;
 use std::io::{self, Write};
+use std::path::{Path, PathBuf};
 
 use crate::error::ShellError;
+
+#[derive(Debug, Default, Clone, Copy)]
+struct Flags {
+    /// `-a`: include `.`, `..`, and other dotfiles.
+    all: bool,
+    /// `-F`: append `/` (dir), `*` (exec), `@` (symlink).
+    classify: bool,
+    /// `-l`: accepted here so combined forms like `-la` parse; long format is SH-012.
+    #[allow(dead_code)]
+    long: bool,
+}
 
 pub fn run(args: &[String]) -> Result<(), ShellError> {
     let stdout = io::stdout();
@@ -12,30 +24,65 @@ pub fn run(args: &[String]) -> Result<(), ShellError> {
 }
 
 fn run_with_writer(args: &[String], out: &mut dyn Write) -> Result<(), ShellError> {
-    // Bare `ls` lists the current directory, same as `ls .`.
-    let targets: Vec<&str> = if args.is_empty() {
+    let (flags, targets) = parse_args(args)?;
+    let targets: Vec<&str> = if targets.is_empty() {
         vec!["."]
     } else {
-        args.iter().map(String::as_str).collect()
+        targets
     };
 
     let classified = classify_targets(&targets)?;
-    write_listing(&classified, out)
+    write_listing(&classified, flags, out)
+}
+
+fn parse_args(args: &[String]) -> Result<(Flags, Vec<&str>), ShellError> {
+    let mut flags = Flags::default();
+    let mut targets = Vec::new();
+    let mut parsing_flags = true;
+
+    for arg in args {
+        if parsing_flags && arg.as_str() == "--" {
+            parsing_flags = false;
+            continue;
+        }
+        if parsing_flags && arg.starts_with('-') && arg.as_str() != "-" {
+            apply_option(arg, &mut flags)?;
+        } else {
+            targets.push(arg.as_str());
+        }
+    }
+
+    Ok((flags, targets))
+}
+
+fn apply_option(arg: &str, flags: &mut Flags) -> Result<(), ShellError> {
+    if arg.starts_with("--") {
+        return Err(ShellError::Usage(format!(
+            "ls: unrecognized option '{arg}'"
+        )));
+    }
+
+    for c in arg.chars().skip(1) {
+        match c {
+            'a' => flags.all = true,
+            'F' => flags.classify = true,
+            'l' => flags.long = true,
+            _ => {
+                return Err(ShellError::Usage(format!("ls: invalid option -- '{c}'")));
+            }
+        }
+    }
+    Ok(())
 }
 
 #[derive(Debug)]
 struct Classified {
-    /// Non-directory operands, already sorted in operand order after name sort.
     files: Vec<String>,
-    /// Directory operands to list the contents of.
     dirs: Vec<String>,
-    /// Whether directory headers (`name:`) should be printed.
     show_headers: bool,
 }
 
 fn classify_targets(targets: &[&str]) -> Result<Classified, ShellError> {
-    // GNU ls sorts operands by name first, then emits non-directories, then
-    // directories. Keep that order so multi-arg listings stay familiar.
     let mut sorted: Vec<&str> = targets.to_vec();
     sorted.sort();
 
@@ -51,9 +98,6 @@ fn classify_targets(targets: &[&str]) -> Result<Classified, ShellError> {
         }
     }
 
-    // Headers appear when there is more than one operand overall, or when a
-    // directory is listed alongside any files. A lone directory (or bare
-    // `ls`) prints contents with no `dirname:` banner.
     let show_headers = targets.len() > 1;
 
     Ok(Classified {
@@ -63,9 +107,14 @@ fn classify_targets(targets: &[&str]) -> Result<Classified, ShellError> {
     })
 }
 
-fn write_listing(classified: &Classified, out: &mut dyn Write) -> Result<(), ShellError> {
+fn write_listing(
+    classified: &Classified,
+    flags: Flags,
+    out: &mut dyn Write,
+) -> Result<(), ShellError> {
     for file in &classified.files {
-        writeln!(out, "{file}").map_err(write_error)?;
+        let line = format_path_entry(Path::new(file), file, flags)?;
+        writeln!(out, "{line}").map_err(write_error)?;
     }
 
     for (i, dir) in classified.dirs.iter().enumerate() {
@@ -76,8 +125,7 @@ fn write_listing(classified: &Classified, out: &mut dyn Write) -> Result<(), She
             writeln!(out, "{dir}:").map_err(write_error)?;
         }
 
-        let names = list_dir_names(dir)?;
-        for name in names {
+        for name in list_dir_entries(dir, flags)? {
             writeln!(out, "{name}").map_err(write_error)?;
         }
     }
@@ -86,25 +134,68 @@ fn write_listing(classified: &Classified, out: &mut dyn Write) -> Result<(), She
     Ok(())
 }
 
-fn list_dir_names(path: &str) -> Result<Vec<String>, ShellError> {
-    let mut names = Vec::new();
+fn list_dir_entries(path: &str, flags: Flags) -> Result<Vec<String>, ShellError> {
+    let mut entries: Vec<(String, String)> = Vec::new();
+    let dir = PathBuf::from(path);
 
-    let entries = fs::read_dir(path).map_err(|source| open_dir_error(path, source))?;
-    for entry in entries {
+    if flags.all {
+        // `read_dir` never yields `.` / `..`; inject them when `-a` is set.
+        entries.push(display_pair(&dir, ".", flags)?);
+        entries.push(display_pair(&dir, "..", flags)?);
+    }
+
+    let read = fs::read_dir(path).map_err(|source| open_dir_error(path, source))?;
+    for entry in read {
         let entry = entry.map_err(|source| open_dir_error(path, source))?;
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        // Plain ls hides dotfiles, including `.` and `..`.
-        if name.starts_with('.') {
+        if !flags.all && name.starts_with('.') {
             continue;
         }
-        names.push(name.into_owned());
+        entries.push(display_pair(&dir, &name, flags)?);
     }
 
-    // Bytewise / lexicographic order on the UTF-8 name. For the ASCII names
-    // the audit uses, this matches `ls` under `LANG=C`.
-    names.sort();
-    Ok(names)
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(entries.into_iter().map(|(_, display)| display).collect())
+}
+
+fn display_pair(dir: &Path, name: &str, flags: Flags) -> Result<(String, String), ShellError> {
+    let display = format_path_entry(&dir.join(name), name, flags)?;
+    Ok((name.to_string(), display))
+}
+
+fn format_path_entry(path: &Path, printed: &str, flags: Flags) -> Result<String, ShellError> {
+    if !flags.classify {
+        return Ok(printed.to_string());
+    }
+
+    // Prefer symlink metadata so a link-to-dir gets `@`, not `/`.
+    let meta = fs::symlink_metadata(path)
+        .map_err(|source| access_error(&path.display().to_string(), source))?;
+    let ft = meta.file_type();
+
+    let mut out = printed.to_string();
+    if ft.is_symlink() {
+        out.push('@');
+    } else if ft.is_dir() {
+        out.push('/');
+    } else if ft.is_file() && is_executable(&meta) {
+        out.push('*');
+    }
+    Ok(out)
+}
+
+#[cfg(unix)]
+fn is_executable(meta: &fs::Metadata) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+    meta.permissions().mode() & 0o111 != 0
+}
+
+#[cfg(not(unix))]
+fn is_executable(meta: &fs::Metadata) -> bool {
+    // Windows has no POSIX exec bits; treat nothing as executable for `-F`.
+    let _ = meta;
+    false
 }
 
 fn access_error(path: &str, source: io::Error) -> ShellError {
@@ -161,7 +252,6 @@ fn pin_reason(source: io::Error, pinned: &[(io::ErrorKind, &str)]) -> io::Error 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
 
     fn argv(words: &[&str]) -> Vec<String> {
         words.iter().map(|w| w.to_string()).collect()
@@ -251,7 +341,6 @@ mod tests {
 
         let a_s = a.to_str().expect("utf8 path");
         let b_s = b.to_str().expect("utf8 path");
-        // Operands are sorted, so order follows the path strings.
         let mut paths = [a_s, b_s];
         paths.sort();
         let expected = format!("{}:\none\n\n{}:\ntwo\n", paths[0], paths[1]);
@@ -280,6 +369,118 @@ mod tests {
         let base = scratch("empty");
         let path = base.to_str().expect("utf8 path");
         assert_eq!(listing(&argv(&[path])), "");
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn dash_a_shows_dot_dotdot_and_hidden() {
+        let base = scratch("all");
+        fs::write(base.join("visible"), b"").unwrap();
+        fs::write(base.join(".secret"), b"").unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-a", path])), ".\n..\n.secret\nvisible\n");
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn combined_la_enables_all_without_treating_l_as_path() {
+        let base = scratch("la");
+        fs::write(base.join(".dot"), b"").unwrap();
+        fs::write(base.join("file"), b"").unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        // `-l` is parsed (for SH-012) but short listing still applies for now.
+        assert_eq!(listing(&argv(&["-la", path])), ".\n..\n.dot\nfile\n");
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn dash_f_appends_slash_for_directories() {
+        let base = scratch("classify-dir");
+        fs::create_dir(base.join("subdir")).unwrap();
+        fs::write(base.join("plain"), b"").unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-F", path])), "plain\nsubdir/\n");
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn dash_f_on_file_operand_leaves_plain_file_unchanged() {
+        let base = scratch("classify-file");
+        let file = base.join("doc.txt");
+        fs::write(&file, b"x").unwrap();
+
+        let path = file.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-F", path])), format!("{path}\n"));
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn separate_flags_combine() {
+        let base = scratch("af");
+        fs::create_dir(base.join("d")).unwrap();
+        fs::write(base.join(".h"), b"").unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-a", "-F", path])), "./\n../\n.h\nd/\n");
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn invalid_option_is_a_usage_error() {
+        let err = parse_args(&argv(&["-z"])).unwrap_err();
+        assert_eq!(err.to_string(), "ls: invalid option -- 'z'");
+    }
+
+    #[test]
+    fn double_dash_ends_flag_parsing() {
+        let base = scratch("ddash");
+        let weird = base.join("-z");
+        fs::write(&weird, b"").unwrap();
+        let weird_s = weird.to_str().expect("utf8 path");
+
+        // Without `--`, `-z` is an invalid option. After `--` it is a path.
+        assert_eq!(listing(&argv(&["--", weird_s])), format!("{weird_s}\n"));
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dash_f_appends_star_for_executable() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let base = scratch("exec");
+        let bin = base.join("run");
+        fs::write(&bin, b"#!/bin/sh\n").unwrap();
+        let mut perms = fs::metadata(&bin).unwrap().permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&bin, perms).unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-F", path])), "run*\n");
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dash_f_appends_at_for_symlink() {
+        let base = scratch("link");
+        let target = base.join("target");
+        fs::write(&target, b"x").unwrap();
+        std::os::unix::fs::symlink("target", base.join("link")).unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        assert_eq!(listing(&argv(&["-F", path])), "link@\ntarget\n");
+
         let _ = fs::remove_dir_all(&base);
     }
 }

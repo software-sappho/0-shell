@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-010 done — plain `ls` lands)
+Last refreshed: 2026-07-22 (SH-011 done — `ls -a` / `-F`)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -121,7 +121,7 @@ should update its Assignee cell in the tables below.
 | SH-008 | ✅ | **mkdir**: `fs::create_dir` per operand, multiple operands in one call; error `mkdir: cannot create directory '<x>': File exists`. Two separate `mkdir` calls must yield two independent dirs. | S | SH-004 | D8 | — |
 | SH-009 | ✅ | **cat**: stream file bytes to stdout unmodified (no added/stripped newline), multiple operands concatenated, directory operand → `cat: <x>: Is a directory`. Must byte-match real `cat`. | M | SH-004 | D9 | — |
 | SH-010 | ✅ | **ls (plain)**: read dir entries, hide dotfiles, sort by name (bytewise, matching `ls` default), print columnized or one-per-line; bare `ls` and `ls <dir>` and `ls <file>`. | M | SH-004 | D10 | — |
-| SH-011 | 🟡 | **ls flags -a / -F**: flag parsing incl. combined forms (`-la`, `-l -a -F`); `-a` shows `.`/`..`/dotfiles; `-F` appends `/` dir, `*` exec, `@` symlink. | M | SH-010 | D11 | — |
+| SH-011 | ✅ | **ls flags -a / -F**: flag parsing incl. combined forms (`-la`, `-l -a -F`); `-a` shows `.`/`..`/dotfiles; `-F` appends `/` dir, `*` exec, `@` symlink. | M | SH-010 | D11 | — |
 | SH-012 | 🟡 | **ls -l long format**: `total <blocks>`, mode string (`drwxr-xr-x`) from `MetadataExt::mode()`, link count, uid/gid → names via `/etc/passwd`+`/etc/group` parsing (no `getpwuid` shell-out), size, `Mon DD HH:MM` mtime, column alignment. | L | SH-010, SH-011 | D11 | — |
 | SH-013 | 🟡 | **cp**: `cp <src> <dst>`; if dst is an existing directory, copy into it preserving basename; preserve contents and mode; error on missing src / dir src without `-r`. Audit case: `cp new_doc.txt ../new_folder2`. | M | SH-004 | D12 | — |
 | SH-014 | 🟡 | **mv**: `fs::rename` fast path; fall back to copy+delete across filesystems; dst-is-directory → move into it. Audit case: `mv new_folder2 new_folder1` nests the directory. | M | SH-004, SH-013 | D13 | — |
@@ -192,7 +192,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D8 | `mkdir` | SH-008 | ✅ |
 | D9 | `cat` | SH-009 | ✅ |
 | D10 | `ls` plain | SH-010 | ✅ |
-| D11 | `ls -l -a -F` | SH-011 🟡, SH-012 🟡 | 🟡 |
+| D11 | `ls -l -a -F` | SH-011 ✅, SH-012 🟡 | 🟡 |
 | D12 | `cp` | SH-013 | 🟡 |
 | D13 | `mv` | SH-014 | 🟡 |
 | D14 | `rm -r` | SH-015 | 🟡 |
@@ -214,17 +214,18 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-The navigation stack (SH-005–SH-007), `mkdir` (SH-008), `cat` (SH-009), and
-plain `ls` (SH-010) are done. These tickets have no ticket-level blocker left
-and can be claimed right now, in any order and by anyone:
+The navigation stack (SH-005–SH-007), `mkdir` (SH-008), `cat` (SH-009),
+plain `ls` (SH-010), and `ls -a`/`-F` (SH-011) are done. These tickets have no
+ticket-level blocker left and can be claimed right now, in any order and by
+anyone:
 
 | Ticket | Unblocks |
 |--------|----------|
-| SH-011 | SH-012, SH-016, SH-022 |
+| SH-012 | SH-016 |
 | SH-013 | SH-014, SH-016 |
 | SH-015 | SH-016 |
 
-SH-012 opens once SH-011 lands; SH-014 opens once SH-013 lands.
+SH-014 opens once SH-013 lands.
 
 ---
 
@@ -232,10 +233,10 @@ SH-012 opens once SH-011 lands; SH-014 opens once SH-013 lands.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 10 |
+| ✅ Done | 11 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 14 |
+| 🟡 To Do | 13 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -255,7 +256,7 @@ SH-012 opens once SH-011 lands; SH-014 opens once SH-013 lands.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Eighteen scheduled tickets remain, most of them independent, and the split should be agreed by whoever picks them up — not prescribed here. The one thing worth flagging: the rest of the `ls` chain (SH-011 → SH-012) is the longest remaining sequence and the biggest audit risk, so it should be claimed first rather than left for later.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Seventeen scheduled tickets remain, most of them independent, and the split should be agreed by whoever picks them up — not prescribed here. The one thing worth flagging: `ls -l` (SH-012) is the biggest remaining audit risk on the `ls` chain, so it should be claimed first rather than left for later.
 
 ---
 
