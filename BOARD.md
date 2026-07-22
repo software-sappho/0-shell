@@ -6,9 +6,9 @@ _Last updated: 2026-07-22_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-**Status:** Foundation phase (SH-001–SH-004) and the navigation stack (SH-005–SH-007) are done. `mkdir` (SH-008), `cat` (SH-009), plain `ls` (SH-010), and `ls -a`/`-F` (SH-011) are done. SH-016 (audit dry-run) still needs all of SH-012–SH-015 first. Phase 2 is open — every remaining ticket is unassigned and unclaimed.
+**Status:** Foundation, navigation, and fs-read (`cat` + full `ls` through `-l`) are done through SH-012. `mkdir` (SH-008) is done. SH-016 (audit dry-run) still needs SH-013–SH-015. Phase 2 write commands remain open and unassigned.
 
-11 Done, 13 To Do, 0 In Progress, 0 In Review, 3 Backlog.
+12 Done, 12 To Do, 0 In Progress, 0 In Review, 3 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -26,7 +26,6 @@ _Last updated: 2026-07-22_
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-012](./SH-012-ls-long.md) | `ls -l` long format | P1 | fs-read | — |
 | [SH-013](./SH-013-cp.md) | `cp` | P1 | fs-write | — |
 | [SH-014](./SH-014-mv.md) | `mv` | P1 | fs-write | — |
 | [SH-015](./SH-015-rm.md) | `rm` / `rm -r` | P1 | fs-write | — |
@@ -67,6 +66,7 @@ _Last updated: 2026-07-22_
 | [SH-009](./SH-009-cat.md) | `cat` | P1 | fs-read | — |
 | [SH-010](./SH-010-ls-plain.md) | `ls` plain listing | P1 | fs-read | — |
 | [SH-011](./SH-011-ls-flags.md) | `ls -a` / `-F` flags | P1 | fs-read | — |
+| [SH-012](./SH-012-ls-long.md) | `ls -l` long format | P1 | fs-read | — |
 
 ---
 
