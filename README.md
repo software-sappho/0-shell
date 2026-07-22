@@ -74,7 +74,7 @@ Unknown commands print exactly:
 Command '<name>' not found
 ```
 
-Errors go to stderr as `<cmd>: <path>: <reason>` (or a command-specific usage line) and return to the prompt — the shell does not panic on bad user input.
+Errors go to stderr as `<cmd>: <path>: <reason>` (or a command-specific usage line) and return to the prompt — the shell does not panic on bad user input. When stderr is a TTY, error lines are printed in red.
 
 ### `ls` flags
 
@@ -85,6 +85,7 @@ Errors go to stderr as `<cmd>: <path>: <reason>` (or a command-specific usage li
 | `-F` | Append `/` (dir), `*` (executable), `@` (symlink). |
 | `-l` | Long format: `total`, mode, nlink, owner, group, size, mtime, name. |
 | Combined | e.g. `-la`, `-l -a -F`. |
+| Colors | On a TTY stdout: directories blue, executables green, symlinks cyan. Disabled when piped/redirected. |
 
 `--` ends option parsing. Owner/group names come from parsing `/etc/passwd` and `/etc/group` (no `getpwuid` shell-out).
 
@@ -118,7 +119,7 @@ These are intentional scope limits or small behavioural differences:
 | `cp` | No `-r` / `-R`; directory sources are refused. Exactly two operands. |
 | `mv` | Exactly two operands (no multi-source form). |
 | `rm` | No `-f` / `-i`; only `-r` / `-R`. |
-| `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R`, colours (see bonuses), or ACL `+` in the mode string. |
+| `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R` or ACL `+` in the mode string. When stdout is a TTY, directories/executables/symlinks are colored (see B5). |
 | `cd` | No `cd -` (previous directory). `~user` is not expanded. |
 | Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
 | Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
@@ -159,7 +160,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B2 | Current directory in the prompt | SH-019 ✅ |
 | B3 | Command history | SH-020 ✅ |
 | B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 ✅ |
-| B5 | Colorized `ls` / errors | SH-022 |
+| B5 | Colorized `ls` / errors | SH-022 ✅ |
 | B6 | `help` command | SH-023 |
 | B7 | Command chaining with `;` | SH-024 |
 | B8 | Completion / pipes / redirection | SH-025–SH-027 (backlog) |

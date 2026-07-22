@@ -6,7 +6,9 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::color::{self, NameKind};
 use crate::error::ShellError;
+use crate::tty;
 
 #[derive(Debug, Default, Clone, Copy)]
 struct Flags {
@@ -21,10 +23,11 @@ struct Flags {
 pub fn run(args: &[String]) -> Result<(), ShellError> {
     let stdout = io::stdout();
     let mut out = stdout.lock();
-    run_with_writer(args, &mut out)
+    // Color only when stdout is a TTY (pipes / redirects stay plain).
+    run_with_writer(args, &mut out, tty::stdout_is_tty())
 }
 
-fn run_with_writer(args: &[String], out: &mut dyn Write) -> Result<(), ShellError> {
+fn run_with_writer(args: &[String], out: &mut dyn Write, colors: bool) -> Result<(), ShellError> {
     let (flags, targets) = parse_args(args)?;
     let targets: Vec<&str> = if targets.is_empty() {
         vec!["."]
@@ -38,7 +41,7 @@ fn run_with_writer(args: &[String], out: &mut dyn Write) -> Result<(), ShellErro
     } else {
         IdNames::empty()
     };
-    write_listing(&classified, flags, &ids, out)
+    write_listing(&classified, flags, &ids, colors, out)
 }
 
 fn parse_args(args: &[String]) -> Result<(Flags, Vec<&str>), ShellError> {
@@ -115,18 +118,25 @@ fn write_listing(
     classified: &Classified,
     flags: Flags,
     ids: &IdNames,
+    colors: bool,
     out: &mut dyn Write,
 ) -> Result<(), ShellError> {
     // Non-directory operands: one long/short line each, never a `total` header.
     if flags.long {
         let mut rows = Vec::new();
         for file in &classified.files {
-            rows.push(long_row_for_path(Path::new(file), file, flags, ids)?);
+            rows.push(long_row_for_path(
+                Path::new(file),
+                file,
+                flags,
+                ids,
+                colors,
+            )?);
         }
         write_long_rows(&rows, out)?;
     } else {
         for file in &classified.files {
-            let line = short_name(Path::new(file), file, flags)?;
+            let line = short_name(Path::new(file), file, flags, colors)?;
             writeln!(out, "{line}").map_err(write_error)?;
         }
     }
@@ -144,7 +154,7 @@ fn write_listing(
             let mut rows = Vec::new();
             let mut total_blocks = 0u64;
             for (name, path) in &entries {
-                let row = long_row_for_path(path, name, flags, ids)?;
+                let row = long_row_for_path(path, name, flags, ids, colors)?;
                 total_blocks = total_blocks.saturating_add(row.blocks);
                 rows.push(row);
             }
@@ -153,7 +163,7 @@ fn write_listing(
             write_long_rows(&rows, out)?;
         } else {
             for (name, path) in &entries {
-                let line = short_name(path, name, flags)?;
+                let line = short_name(path, name, flags, colors)?;
                 writeln!(out, "{line}").map_err(write_error)?;
             }
         }
@@ -187,27 +197,54 @@ fn collect_dir_entries(path: &str, flags: Flags) -> Result<Vec<(String, PathBuf)
     Ok(entries)
 }
 
-fn short_name(path: &Path, printed: &str, flags: Flags) -> Result<String, ShellError> {
-    if !flags.classify {
+fn short_name(
+    path: &Path,
+    printed: &str,
+    flags: Flags,
+    colors: bool,
+) -> Result<String, ShellError> {
+    if !flags.classify && !colors {
         return Ok(printed.to_string());
     }
-    classify_suffix(path, printed)
-}
-
-fn classify_suffix(path: &Path, printed: &str) -> Result<String, ShellError> {
     let meta = fs::symlink_metadata(path)
         .map_err(|source| access_error(&path.display().to_string(), source))?;
-    let ft = meta.file_type();
+    Ok(format_name(printed, &meta, flags.classify, colors))
+}
 
-    let mut out = printed.to_string();
-    if ft.is_symlink() {
-        out.push('@');
-    } else if ft.is_dir() {
-        out.push('/');
-    } else if ft.is_file() && is_executable(&meta) {
-        out.push('*');
+fn format_name(printed: &str, meta: &fs::Metadata, classify: bool, colors: bool) -> String {
+    let mut out = color::paint_name(printed, name_kind(meta), colors);
+    if classify {
+        if let Some(ch) = classify_char(meta) {
+            out.push(ch);
+        }
     }
-    Ok(out)
+    out
+}
+
+fn name_kind(meta: &fs::Metadata) -> NameKind {
+    let ft = meta.file_type();
+    if ft.is_symlink() {
+        NameKind::Symlink
+    } else if ft.is_dir() {
+        NameKind::Dir
+    } else if ft.is_file() && is_executable(meta) {
+        NameKind::Exec
+    } else {
+        NameKind::File
+    }
+}
+
+fn classify_char(meta: &fs::Metadata) -> Option<char> {
+    let ft = meta.file_type();
+    if ft.is_symlink() {
+        Some('@')
+    } else if ft.is_dir() {
+        Some('/')
+    } else if ft.is_file() && is_executable(meta) {
+        Some('*')
+    } else {
+        None
+    }
 }
 
 #[derive(Debug)]
@@ -227,6 +264,7 @@ fn long_row_for_path(
     printed: &str,
     flags: Flags,
     ids: &IdNames,
+    colors: bool,
 ) -> Result<LongRow, ShellError> {
     let meta = fs::symlink_metadata(path)
         .map_err(|source| access_error(&path.display().to_string(), source))?;
@@ -237,11 +275,7 @@ fn long_row_for_path(
     let group = ids.group(gid);
     let time = format_mtime(&meta);
 
-    let mut name = if flags.classify {
-        classify_suffix(path, printed)?
-    } else {
-        printed.to_string()
-    };
+    let mut name = format_name(printed, &meta, flags.classify, colors);
 
     if meta.file_type().is_symlink() {
         if let Ok(target) = fs::read_link(path) {
@@ -653,7 +687,8 @@ mod tests {
 
     fn listing(args: &[String]) -> String {
         let mut out = Vec::new();
-        run_with_writer(args, &mut out).expect("ls should succeed");
+        // Tests always run with colors off so assertions stay byte-stable.
+        run_with_writer(args, &mut out, false).expect("ls should succeed");
         String::from_utf8(out).expect("utf8 output")
     }
 
@@ -743,7 +778,7 @@ mod tests {
         let path = missing.to_str().expect("utf8 path").to_string();
 
         let mut out = Vec::new();
-        let err = run_with_writer(std::slice::from_ref(&path), &mut out).unwrap_err();
+        let err = run_with_writer(std::slice::from_ref(&path), &mut out, false).unwrap_err();
         assert_eq!(
             err.to_string(),
             format!("ls: cannot access '{path}': No such file or directory")
@@ -755,6 +790,24 @@ mod tests {
         let base = scratch("empty");
         let path = base.to_str().expect("utf8 path");
         assert_eq!(listing(&argv(&[path])), "");
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn colors_wrap_dirs_and_execs_when_enabled() {
+        let base = scratch("colors");
+        fs::create_dir(base.join("subdir")).unwrap();
+        fs::write(base.join("plain"), b"").unwrap();
+
+        let path = base.to_str().expect("utf8 path");
+        let mut out = Vec::new();
+        run_with_writer(&argv(&[path]), &mut out, true).expect("ls");
+        let text = String::from_utf8(out).unwrap();
+
+        assert!(text.contains("plain\n") || text.contains("plain"));
+        assert!(text.contains("\x1b[1;34msubdir\x1b[0m"));
+        assert!(!text.contains("\x1b[1;34mplain"));
+
         let _ = fs::remove_dir_all(&base);
     }
 

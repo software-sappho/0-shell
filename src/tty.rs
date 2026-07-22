@@ -1,6 +1,9 @@
 //! Terminal raw-mode helpers for interactive line editing (Unix).
 
 #[cfg(unix)]
+pub use unix::{stderr_is_tty, stdin_is_tty, stdout_is_tty, RawMode};
+
+#[cfg(unix)]
 mod unix {
     use std::io;
 
@@ -10,6 +13,14 @@ mod unix {
 
     pub fn stdin_is_tty() -> bool {
         unsafe { isatty(0) == 1 }
+    }
+
+    pub fn stdout_is_tty() -> bool {
+        unsafe { isatty(1) == 1 }
+    }
+
+    pub fn stderr_is_tty() -> bool {
+        unsafe { isatty(2) == 1 }
     }
 
     /// Enter non-canonical, no-echo mode on stdin. Restored on drop.
@@ -99,10 +110,30 @@ mod unix {
     }
 }
 
-#[cfg(unix)]
-pub use unix::{stdin_is_tty, RawMode};
-
 #[cfg(not(unix))]
 pub fn stdin_is_tty() -> bool {
     false
+}
+
+#[cfg(not(unix))]
+pub fn stdout_is_tty() -> bool {
+    false
+}
+
+#[cfg(not(unix))]
+pub fn stderr_is_tty() -> bool {
+    false
+}
+
+#[cfg(not(unix))]
+pub struct RawMode;
+
+#[cfg(not(unix))]
+impl RawMode {
+    pub fn enter() -> std::io::Result<Self> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "raw mode not available on this OS",
+        ))
+    }
 }

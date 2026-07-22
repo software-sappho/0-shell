@@ -4,11 +4,11 @@ use std::env;
 use std::io::{self, ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
+use crate::color;
 use crate::dispatch::{dispatch, ControlFlow};
 use crate::history::{self, History};
 use crate::parser::tokenize_with_status;
 use crate::signals;
-#[cfg(unix)]
 use crate::tty;
 
 pub fn run() -> ! {
@@ -59,9 +59,9 @@ pub fn run() -> ! {
             }
             Err(err) => {
                 consecutive_read_errors += 1;
-                eprintln!("0-shell: {err}");
+                print_err(format!("0-shell: {err}"));
                 if consecutive_read_errors >= 3 {
-                    eprintln!("0-shell: too many consecutive read errors, exiting");
+                    print_err("0-shell: too many consecutive read errors, exiting");
                     std::process::exit(1);
                 }
                 continue;
@@ -83,7 +83,7 @@ pub fn run() -> ! {
         let argv = match tokenize_with_status(trimmed, last_status) {
             Ok(argv) => argv,
             Err(err) => {
-                eprintln!("{err}");
+                print_err(err.to_string());
                 last_status = 1;
                 continue;
             }
@@ -99,7 +99,7 @@ pub fn run() -> ! {
                 last_status = 0;
             }
             ControlFlow::Continue(Err(err)) => {
-                eprintln!("{err}");
+                print_err(err.to_string());
                 last_status = match &err {
                     crate::error::ShellError::NotFound(_) => 127,
                     _ => 1,
@@ -107,6 +107,14 @@ pub fn run() -> ! {
             }
         }
     }
+}
+
+/// Errors go to stderr; red when stderr is a TTY.
+fn print_err(message: impl AsRef<str>) {
+    eprintln!(
+        "{}",
+        color::paint_error(message.as_ref(), tty::stderr_is_tty())
+    );
 }
 
 /// `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, refreshed every loop

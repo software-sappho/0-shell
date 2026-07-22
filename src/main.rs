@@ -6,6 +6,7 @@
 // has no constructor yet. Allow dead_code until the command tickets land.
 #![allow(dead_code)]
 
+mod color;
 mod commands;
 mod dispatch;
 mod error;
