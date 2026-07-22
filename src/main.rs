@@ -11,6 +11,7 @@ mod dispatch;
 mod error;
 mod parser;
 mod repl;
+mod signals;
 
 fn main() {
     repl::run();

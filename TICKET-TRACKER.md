@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-017 done — README / usage docs)
+Last refreshed: 2026-07-22 (SH-018 done — Ctrl+C / SIGINT)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -146,7 +146,7 @@ should update its Assignee cell in the tables below.
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-018 | 🟡 | **Ctrl+C (SIGINT)**: install handler via `signal`/`sigaction`; cancel the current line, print a fresh prompt, never exit or unwind through the loop. | M | SH-002 | B1 | — |
+| SH-018 | ✅ | **Ctrl+C (SIGINT)**: install handler via `signal`/`sigaction`; cancel the current line, print a fresh prompt, never exit or unwind through the loop. | M | SH-002 | B1 | — |
 | SH-019 | 🟡 | **Prompt with cwd**: `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, updates after `cd`. | S | SH-007 | B2 | — |
 | SH-020 | 🟡 | **Command history**: in-memory ring + ↑/↓ recall (raw mode), optional persistence to `~/.0shell_history`. | M | SH-002 | B3 | — |
 | SH-021 | 🟡 | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | — |
@@ -197,7 +197,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D13 | `mv` | SH-014 | ✅ |
 | D14 | `rm -r` | SH-015 | ✅ |
 | D15 | Audit checklist verified | SH-016 | ✅ |
-| B1 | Ctrl+C | SH-018 | 🟡 |
+| B1 | Ctrl+C | SH-018 | ✅ |
 | B2 | Prompt cwd | SH-019 | 🟡 |
 | B3 | History | SH-020 | 🟡 |
 | B4 | Env vars | SH-021 | 🟡 |
@@ -214,13 +214,14 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-Mandatory path through docs is complete. Optional next work:
+Mandatory path through docs is complete. Bonus progress:
 
 | Ticket | Notes |
 |--------|-------|
-| SH-018+ | Bonus track (Ctrl+C, prompt cwd, history, …) |
+| SH-019 | Prompt with cwd |
+| SH-020+ | History, env vars, colours, help, chaining |
 
-All of SH-001–SH-017 are ✅.
+SH-018 (Ctrl+C) is ✅.
 
 ---
 
@@ -228,10 +229,10 @@ All of SH-001–SH-017 are ✅.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 17 |
+| ✅ Done | 18 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 7 |
+| 🟡 To Do | 6 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -251,7 +252,7 @@ All of SH-001–SH-017 are ✅.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Eleven scheduled tickets remain (all bonus). The mandatory path including the audit dry-run and README is complete.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Ten scheduled tickets remain (bonus). The mandatory path including the audit dry-run and README is complete; Ctrl+C handling (SH-018) is done.
 
 ---
 

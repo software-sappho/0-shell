@@ -120,10 +120,10 @@ These are intentional scope limits or small behavioural differences:
 | `rm` | No `-f` / `-i`; only `-r` / `-R`. |
 | `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R`, colours (see bonuses), or ACL `+` in the mode string. |
 | `cd` | No `cd -` (previous directory). `~user` is not expanded. |
-| Prompt | Fixed `$ ` (cwd in the prompt is a bonus). |
-| Signals | Ctrl+C is not specially handled yet (bonus). |
+| Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
 | Env / `$VAR` | Not expanded at parse time yet (bonus). |
 | Chaining | No `;`, pipes, or redirections yet (bonus / backlog). |
+| Prompt | Fixed `$ ` (cwd in the prompt is a bonus). |
 
 Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), this shell aims for byte-for-byte parity with bash/coreutils under `LANG=C`.
 
@@ -132,7 +132,8 @@ Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), thi
 ```text
 src/
   main.rs          Entry point → REPL
-  repl.rs          Prompt, read line, dispatch
+  repl.rs          Prompt, interruptible read, dispatch
+  signals.rs       SIGINT handler (Ctrl+C)
   parser.rs        Tokenizer (quotes)
   dispatch.rs      Builtin table
   error.rs         ShellError

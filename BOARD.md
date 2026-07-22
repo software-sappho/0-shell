@@ -6,9 +6,9 @@ _Last updated: 2026-07-22_
 > **Full tracker:** see [TICKET-TRACKER.md](./TICKET-TRACKER.md) for acceptance detail and coverage.
 > **Branch naming:** `ticket/SH-XXX-short-title` — see [../docs/BRANCHING.md](../docs/BRANCHING.md)
 
-**Status:** Mandatory path complete through SH-017 (README). Audit dry-run is green. Remaining To Do items are Phase 4 bonuses only.
+**Status:** Mandatory path complete through SH-017. Bonus SH-018 (Ctrl+C) is done. Next bonuses: prompt cwd, history, etc.
 
-17 Done, 7 To Do, 0 In Progress, 0 In Review, 3 Backlog.
+18 Done, 6 To Do, 0 In Progress, 0 In Review, 3 Backlog.
 
 **Do not start Phase 4 (bonus) until every Phase 2 ticket is ✅ and SH-016 passes.**
 
@@ -26,7 +26,6 @@ _Last updated: 2026-07-22_
 
 | ID | Title | Priority | Epic | Assignee |
 |----|-------|----------|------|----------|
-| [SH-018](./SH-018-bonus-sigint.md) | Ctrl+C handling (bonus) | P2 | bonus | — |
 | [SH-019](./SH-019-bonus-prompt-cwd.md) | Current dir in prompt (bonus) | P2 | bonus | — |
 | [SH-020](./SH-020-bonus-history.md) | Command history (bonus) | P2 | bonus | — |
 | [SH-021](./SH-021-bonus-env-vars.md) | Environment variables (bonus) | P2 | bonus | — |
@@ -67,6 +66,7 @@ _Last updated: 2026-07-22_
 | [SH-015](./SH-015-rm.md) | `rm` / `rm -r` | P1 | fs-write | — |
 | [SH-016](./SH-016-audit-dry-run.md) | Audit dry-run vs real bash | P1 | qa | — |
 | [SH-017](./SH-017-readme.md) | README / usage docs | P1 | docs | — |
+| [SH-018](./SH-018-bonus-sigint.md) | Ctrl+C handling (bonus) | P2 | bonus | — |
 
 ---
 
