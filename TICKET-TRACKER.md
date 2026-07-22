@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-006 done — `pwd`/`exit` land, SH-007 unblocked)
+Last refreshed: 2026-07-22 (SH-007 done — navigation stack complete, SH-019 unblocked)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -117,7 +117,7 @@ should update its Assignee cell in the tables below.
 |----|--------|--------|------|------|----------|----------|
 | SH-005 | ✅ | **echo**: join args with a single space + trailing `\n`; quotes already stripped by SH-003. Verify `echo "something!"` and `echo something else` byte-match bash. | S | SH-004 | D5 | — |
 | SH-006 | ✅ | **pwd & exit**: `pwd` via `env::current_dir()`; `exit` terminates the process cleanly (optional numeric status arg) and returns control to the parent shell. | S | SH-004 | D6 | — |
-| SH-007 | 🟡 | **cd**: bare `cd` → `$HOME`; relative and absolute paths via `env::set_current_dir`; errors: `cd: <path>: No such file or directory`, `Not a directory`, `Permission denied`. Confirm with `pwd` after nested `mkdir`. | M | SH-004, SH-006 | D7 | — |
+| SH-007 | ✅ | **cd**: bare `cd` → `$HOME`; relative and absolute paths via `env::set_current_dir`; errors: `cd: <path>: No such file or directory`, `Not a directory`, `Permission denied`. Confirm with `pwd` after nested `mkdir`. | M | SH-004, SH-006 | D7 | — |
 | SH-008 | 🟡 | **mkdir**: `fs::create_dir` per operand, multiple operands in one call; error `mkdir: cannot create directory '<x>': File exists`. Two separate `mkdir` calls must yield two independent dirs. | S | SH-004 | D8 | — |
 | SH-009 | 🟡 | **cat**: stream file bytes to stdout unmodified (no added/stripped newline), multiple operands concatenated, directory operand → `cat: <x>: Is a directory`. Must byte-match real `cat`. | M | SH-004 | D9 | — |
 | SH-010 | 🟡 | **ls (plain)**: read dir entries, hide dotfiles, sort by name (bytewise, matching `ls` default), print columnized or one-per-line; bare `ls` and `ls <dir>` and `ls <file>`. | M | SH-004 | D10 | — |
@@ -188,7 +188,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D4 | Dispatch & not-found message | SH-004 | ✅ |
 | D5 | `echo` | SH-005 | ✅ |
 | D6 | `pwd`, `exit` | SH-006 | ✅ |
-| D7 | `cd` | SH-007 | 🟡 |
+| D7 | `cd` | SH-007 | ✅ |
 | D8 | `mkdir` | SH-008 | 🟡 |
 | D9 | `cat` | SH-009 | 🟡 |
 | D10 | `ls` plain | SH-010 | 🟡 |
@@ -214,13 +214,12 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-Foundation is done, and `echo` (SH-005) and `pwd`/`exit` (SH-006) are done.
-These six tickets have no ticket-level blocker left and can be claimed right
-now, in any order and by anyone:
+The navigation stack (SH-005–SH-007) is done. These five tickets have no
+ticket-level blocker left and can be claimed right now, in any order and by
+anyone:
 
 | Ticket | Unblocks |
 |--------|----------|
-| SH-007 | SH-016, SH-019 |
 | SH-008 | SH-016 |
 | SH-009 | SH-016 |
 | SH-010 | SH-011, SH-012, SH-016, SH-022 |
@@ -235,10 +234,10 @@ SH-011 (then SH-012) open once SH-010 lands; SH-014 opens once SH-013 lands.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 6 |
+| ✅ Done | 7 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 18 |
+| 🟡 To Do | 17 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |

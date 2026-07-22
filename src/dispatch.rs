@@ -85,14 +85,39 @@ mod tests {
         ));
     }
 
+    // `cd` is deliberately excluded from this loop: unlike the other
+    // builtins, a real `cd` mutates the whole process's working directory,
+    // which is global state shared by every concurrently-running test
+    // thread. See `cd_dispatches_and_restores_cwd` below for a dispatch-level
+    // test of `cd` that saves and restores the directory safely.
     #[test]
     fn every_non_exit_builtin_dispatches() {
-        for name in ["echo", "cd", "pwd", "ls", "cat", "cp", "rm", "mv", "mkdir"] {
+        for name in ["echo", "pwd", "ls", "cat", "cp", "rm", "mv", "mkdir"] {
             assert!(
                 matches!(dispatch(&argv(&[name])), ControlFlow::Continue(Ok(()))),
                 "expected {name} to dispatch to a builtin"
             );
         }
+    }
+
+    #[test]
+    fn cd_dispatches_and_restores_cwd() {
+        struct RestoreCwd(std::path::PathBuf);
+        impl Drop for RestoreCwd {
+            fn drop(&mut self) {
+                let _ = std::env::set_current_dir(&self.0);
+            }
+        }
+
+        let original = std::env::current_dir().expect("cwd must be readable in tests");
+        let _restore = RestoreCwd(original);
+
+        let target = std::env::temp_dir();
+        let target = target.to_str().expect("temp dir must be valid UTF-8");
+        assert!(matches!(
+            dispatch(&argv(&["cd", target])),
+            ControlFlow::Continue(Ok(()))
+        ));
     }
 
     // "A full exit run": exercise dispatch() end to end for `exit`, the same
