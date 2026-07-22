@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::dispatch::{dispatch, ControlFlow};
 use crate::history::{self, History};
-use crate::parser::tokenize;
+use crate::parser::tokenize_with_status;
 use crate::signals;
 #[cfg(unix)]
 use crate::tty;
@@ -22,6 +22,7 @@ pub fn run() -> ! {
 
     let mut line = String::new();
     let mut consecutive_read_errors = 0u32;
+    let mut last_status = 0i32;
 
     loop {
         // The prompt is cosmetic terminal output, not command output, so it
@@ -79,10 +80,11 @@ pub fn run() -> ! {
             let _ = hist.append_to_path(path, trimmed);
         }
 
-        let argv = match tokenize(trimmed) {
+        let argv = match tokenize_with_status(trimmed, last_status) {
             Ok(argv) => argv,
             Err(err) => {
                 eprintln!("{err}");
+                last_status = 1;
                 continue;
             }
         };
@@ -93,8 +95,16 @@ pub fn run() -> ! {
 
         match dispatch(&argv) {
             ControlFlow::Exit(code) => std::process::exit(code),
-            ControlFlow::Continue(Ok(())) => {}
-            ControlFlow::Continue(Err(err)) => eprintln!("{err}"),
+            ControlFlow::Continue(Ok(())) => {
+                last_status = 0;
+            }
+            ControlFlow::Continue(Err(err)) => {
+                eprintln!("{err}");
+                last_status = match &err {
+                    crate::error::ShellError::NotFound(_) => 127,
+                    _ => 1,
+                };
+            }
         }
     }
 }

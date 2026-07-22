@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-020 done — command history)
+Last refreshed: 2026-07-22 (SH-021 done — env var expansion)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -149,7 +149,7 @@ should update its Assignee cell in the tables below.
 | SH-018 | ✅ | **Ctrl+C (SIGINT)**: install handler via `signal`/`sigaction`; cancel the current line, print a fresh prompt, never exit or unwind through the loop. | M | SH-002 | B1 | — |
 | SH-019 | ✅ | **Prompt with cwd**: `~/projects/0-shell $ ` — `$HOME` collapsed to `~`, updates after `cd`. | S | SH-007 | B2 | — |
 | SH-020 | ✅ | **Command history**: in-memory ring + ↑/↓ recall (raw mode), optional persistence to `~/.0shell_history`. | M | SH-002 | B3 | — |
-| SH-021 | 🟡 | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | — |
+| SH-021 | ✅ | **Environment variables**: expand `$VAR` / `${VAR}` at parse time via `env::var`; support `$HOME`, `$PATH`, `$?`. | M | SH-003 | B4 | — |
 | SH-022 | 🟡 | **Colorized output**: ANSI colors for directories/executables in `ls`, red for errors; suppress when stdout is not a TTY. | S | SH-010, SH-011 | B5 | — |
 | SH-023 | 🟡 | **help command**: list every builtin with flags and a one-line description; `help <cmd>` for detail. | S | SH-004 | B6 | — |
 | SH-024 | 🟡 | **Command chaining `;`**: split the line into sequential commands before tokenizing; each runs in order, a failure does not abort the rest. | M | SH-003, SH-004 | B7 | — |
@@ -200,7 +200,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | B1 | Ctrl+C | SH-018 | ✅ |
 | B2 | Prompt cwd | SH-019 | ✅ |
 | B3 | History | SH-020 | ✅ |
-| B4 | Env vars | SH-021 | 🟡 |
+| B4 | Env vars | SH-021 | ✅ |
 | B5 | Colors | SH-022 | 🟡 |
 | B6 | `help` | SH-023 | 🟡 |
 | B7 | Chaining `;` | SH-024 | 🟡 |
@@ -218,10 +218,11 @@ Mandatory path through docs is complete. Bonus progress:
 
 | Ticket | Notes |
 |--------|-------|
-| SH-021 | Env vars |
-| SH-022+ | Colours, help, chaining |
+| SH-022 | Colorized output |
+| SH-023 | `help` |
+| SH-024 | Command chaining `;` |
 
-SH-018–SH-020 (Ctrl+C, cwd prompt, history) are ✅.
+SH-018–SH-021 are ✅.
 
 ---
 
@@ -229,10 +230,10 @@ SH-018–SH-020 (Ctrl+C, cwd prompt, history) are ✅.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 20 |
+| ✅ Done | 21 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 4 |
+| 🟡 To Do | 3 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -252,7 +253,7 @@ SH-018–SH-020 (Ctrl+C, cwd prompt, history) are ✅.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Eight scheduled tickets remain (bonus). The mandatory path including the audit dry-run and README is complete; Ctrl+C, cwd prompt, and history bonuses are done.
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Seven scheduled tickets remain (bonus). The mandatory path including the audit dry-run and README is complete; bonuses through env-var expansion (SH-021) are done.
 
 ---
 

@@ -121,7 +121,7 @@ These are intentional scope limits or small behavioural differences:
 | `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R`, colours (see bonuses), or ACL `+` in the mode string. |
 | `cd` | No `cd -` (previous directory). `~user` is not expanded. |
 | Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
-| Env / `$VAR` | Not expanded at parse time yet (bonus). |
+| Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
 | Chaining | No `;`, pipes, or redirections yet (bonus / backlog). |
 | Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
 | History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
@@ -158,7 +158,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B1 | Ctrl+C (SIGINT) without exiting | SH-018 ✅ |
 | B2 | Current directory in the prompt | SH-019 ✅ |
 | B3 | Command history | SH-020 ✅ |
-| B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 |
+| B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 ✅ |
 | B5 | Colorized `ls` / errors | SH-022 |
 | B6 | `help` command | SH-023 |
 | B7 | Command chaining with `;` | SH-024 |
