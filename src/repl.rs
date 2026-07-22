@@ -2,7 +2,7 @@
 
 use std::io::{self, Write};
 
-use crate::dispatch::dispatch;
+use crate::dispatch::{dispatch, ControlFlow};
 use crate::parser::tokenize;
 
 pub fn run() -> ! {
@@ -60,8 +60,10 @@ pub fn run() -> ! {
             continue;
         }
 
-        if let Err(err) = dispatch(&argv) {
-            eprintln!("{err}");
+        match dispatch(&argv) {
+            ControlFlow::Exit(code) => std::process::exit(code),
+            ControlFlow::Continue(Ok(())) => {}
+            ControlFlow::Continue(Err(err)) => eprintln!("{err}"),
         }
     }
 }

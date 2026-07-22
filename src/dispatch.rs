@@ -3,23 +3,39 @@
 use crate::commands;
 use crate::error::ShellError;
 
-pub fn dispatch(argv: &[String]) -> Result<(), ShellError> {
+/// What the REPL loop should do after a dispatched command runs.
+///
+/// `exit` is the only builtin that can request loop termination, and it
+/// needs to carry a numeric code out — a plain `Result<(), ShellError>`
+/// can't express that, so dispatch() returns this instead. Only the REPL
+/// loop acts on `Exit` by calling `std::process::exit`; dispatch() itself
+/// never exits the process, which keeps it testable.
+#[derive(Debug)]
+pub enum ControlFlow {
+    Exit(i32),
+    Continue(Result<(), ShellError>),
+}
+
+pub fn dispatch(argv: &[String]) -> ControlFlow {
     let Some(name) = argv.first() else {
-        return Ok(());
+        return ControlFlow::Continue(Ok(()));
     };
 
     match name.as_str() {
-        "echo" => commands::echo::run(&argv[1..]),
-        "cd" => commands::cd::run(&argv[1..]),
-        "pwd" => commands::pwd::run(&argv[1..]),
-        "ls" => commands::ls::run(&argv[1..]),
-        "cat" => commands::cat::run(&argv[1..]),
-        "cp" => commands::cp::run(&argv[1..]),
-        "rm" => commands::rm::run(&argv[1..]),
-        "mv" => commands::mv::run(&argv[1..]),
-        "mkdir" => commands::mkdir::run(&argv[1..]),
-        "exit" => commands::exit::run(&argv[1..]),
-        _ => Err(ShellError::NotFound(name.clone())),
+        "echo" => ControlFlow::Continue(commands::echo::run(&argv[1..])),
+        "cd" => ControlFlow::Continue(commands::cd::run(&argv[1..])),
+        "pwd" => ControlFlow::Continue(commands::pwd::run(&argv[1..])),
+        "ls" => ControlFlow::Continue(commands::ls::run(&argv[1..])),
+        "cat" => ControlFlow::Continue(commands::cat::run(&argv[1..])),
+        "cp" => ControlFlow::Continue(commands::cp::run(&argv[1..])),
+        "rm" => ControlFlow::Continue(commands::rm::run(&argv[1..])),
+        "mv" => ControlFlow::Continue(commands::mv::run(&argv[1..])),
+        "mkdir" => ControlFlow::Continue(commands::mkdir::run(&argv[1..])),
+        "exit" => match commands::exit::parse_code(&argv[1..]) {
+            Ok(code) => ControlFlow::Exit(code),
+            Err(err) => ControlFlow::Continue(Err(err)),
+        },
+        _ => ControlFlow::Continue(Err(ShellError::NotFound(name.clone()))),
     }
 }
 
@@ -33,43 +49,82 @@ mod tests {
 
     #[test]
     fn unknown_command_is_not_found() {
-        let err = dispatch(&argv(&["something"])).unwrap_err();
+        let ControlFlow::Continue(Err(err)) = dispatch(&argv(&["something"])) else {
+            panic!("expected ControlFlow::Continue(Err(NotFound))");
+        };
         assert!(matches!(&err, ShellError::NotFound(name) if name == "something"));
         assert_eq!(err.to_string(), "Command 'something' not found");
     }
 
     #[test]
     fn empty_argv_is_ok() {
-        assert!(dispatch(&[]).is_ok());
+        assert!(matches!(dispatch(&[]), ControlFlow::Continue(Ok(()))));
     }
 
     #[test]
     fn ls_dispatches() {
-        assert!(dispatch(&argv(&["ls"])).is_ok());
+        assert!(matches!(
+            dispatch(&argv(&["ls"])),
+            ControlFlow::Continue(Ok(()))
+        ));
     }
 
     #[test]
     fn echo_with_args_dispatches() {
-        assert!(dispatch(&argv(&["echo", "hi"])).is_ok());
+        assert!(matches!(
+            dispatch(&argv(&["echo", "hi"])),
+            ControlFlow::Continue(Ok(()))
+        ));
     }
 
     #[test]
     fn command_names_are_case_sensitive() {
         assert!(matches!(
             dispatch(&argv(&["LS"])),
-            Err(ShellError::NotFound(_))
+            ControlFlow::Continue(Err(ShellError::NotFound(_)))
         ));
     }
 
     #[test]
-    fn every_builtin_dispatches() {
-        for name in [
-            "echo", "cd", "pwd", "ls", "cat", "cp", "rm", "mv", "mkdir", "exit",
-        ] {
+    fn every_non_exit_builtin_dispatches() {
+        for name in ["echo", "cd", "pwd", "ls", "cat", "cp", "rm", "mv", "mkdir"] {
             assert!(
-                dispatch(&argv(&[name])).is_ok(),
+                matches!(dispatch(&argv(&[name])), ControlFlow::Continue(Ok(()))),
                 "expected {name} to dispatch to a builtin"
             );
         }
+    }
+
+    // "A full exit run": exercise dispatch() end to end for `exit`, the same
+    // way the REPL loop would, and confirm it produces the ControlFlow::Exit
+    // the loop needs to break correctly — without ever calling
+    // std::process::exit, so the test process keeps running.
+    #[test]
+    fn bare_exit_requests_exit_code_zero() {
+        assert!(matches!(dispatch(&argv(&["exit"])), ControlFlow::Exit(0)));
+    }
+
+    #[test]
+    fn exit_with_numeric_arg_requests_that_code() {
+        assert!(matches!(
+            dispatch(&argv(&["exit", "44"])),
+            ControlFlow::Exit(44)
+        ));
+    }
+
+    #[test]
+    fn exit_with_bad_arg_does_not_request_exit() {
+        assert!(matches!(
+            dispatch(&argv(&["exit", "hello"])),
+            ControlFlow::Continue(Err(ShellError::Usage(_)))
+        ));
+    }
+
+    #[test]
+    fn exit_with_too_many_args_does_not_request_exit() {
+        assert!(matches!(
+            dispatch(&argv(&["exit", "1", "2", "3"])),
+            ControlFlow::Continue(Err(ShellError::Usage(_)))
+        ));
     }
 }
