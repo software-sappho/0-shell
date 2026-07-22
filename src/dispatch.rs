@@ -31,6 +31,7 @@ pub fn dispatch(argv: &[String]) -> ControlFlow {
         "rm" => ControlFlow::Continue(commands::rm::run(&argv[1..])),
         "mv" => ControlFlow::Continue(commands::mv::run(&argv[1..])),
         "mkdir" => ControlFlow::Continue(commands::mkdir::run(&argv[1..])),
+        "help" => ControlFlow::Continue(commands::help::run(&argv[1..])),
         "exit" => match commands::exit::parse_code(&argv[1..]) {
             Ok(code) => ControlFlow::Exit(code),
             Err(err) => ControlFlow::Continue(Err(err)),
@@ -94,7 +95,7 @@ mod tests {
     // `cp` / `rm` / `mv` need operands; bare invocation is a usage error.
     #[test]
     fn every_non_exit_builtin_dispatches() {
-        for name in ["echo", "pwd", "ls", "cat", "mkdir"] {
+        for name in ["echo", "pwd", "ls", "cat", "mkdir", "help"] {
             assert!(
                 matches!(dispatch(&argv(&[name])), ControlFlow::Continue(Ok(()))),
                 "expected {name} to dispatch to a builtin"

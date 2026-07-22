@@ -66,6 +66,7 @@ Results from the last green run: [AUDIT-DRY-RUN.md](./AUDIT-DRY-RUN.md).
 | `cp <src> <dst>` | Copy a file. If `dst` is a directory, copy into it preserving the basename. Directories require `-r` (not implemented — refused). |
 | `mv <src> <dst>` | Rename/move a file or directory. If `dst` is a directory, move into it. Cross-device moves fall back to copy+delete. |
 | `rm [opts] <path>…` | Remove files. Directories need `-r` / `-R`. |
+| `help [cmd]` | List builtins, or show detail for one command. |
 | `exit [code]` | Exit the shell (optional status 0–255). |
 
 Unknown commands print exactly:
@@ -141,7 +142,7 @@ src/
   parser.rs        Tokenizer (quotes)
   dispatch.rs      Builtin table
   error.rs         ShellError
-  commands/        echo, cd, pwd, ls, cat, cp, mv, rm, mkdir, exit
+  commands/        echo, cd, pwd, ls, cat, cp, mv, rm, mkdir, help, exit
 scripts/
   audit-dry-run.sh Automated checklist vs bash
 ```
@@ -161,7 +162,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B3 | Command history | SH-020 ✅ |
 | B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 ✅ |
 | B5 | Colorized `ls` / errors | SH-022 ✅ |
-| B6 | `help` command | SH-023 |
+| B6 | `help` command | SH-023 ✅ |
 | B7 | Command chaining with `;` | SH-024 |
 | B8 | Completion / pipes / redirection | SH-025–SH-027 (backlog) |
 
