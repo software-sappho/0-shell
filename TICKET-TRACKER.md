@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-22 (SH-015 done — `rm` / `rm -r`)
+Last refreshed: 2026-07-22 (SH-016 done — audit dry-run green)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -135,7 +135,7 @@ should update its Assignee cell in the tables below.
 
 | ID | Status | Ticket | Size | Deps | Coverage | Assignee |
 |----|--------|--------|------|------|----------|----------|
-| SH-016 | 🟡 | **Audit dry-run**: walk the 12-point checklist side-by-side against a real terminal, diff outputs, log failures as follow-up tickets. Includes crash-hunt pass: bad flags, missing operands, `/root`, non-UTF-8 filenames, very long input. | M | SH-005–SH-015 | D15 | — |
+| SH-016 | ✅ | **Audit dry-run**: walk the 12-point checklist side-by-side against a real terminal, diff outputs, log failures as follow-up tickets. Includes crash-hunt pass: bad flags, missing operands, `/root`, non-UTF-8 filenames, very long input. | M | SH-005–SH-015 | D15 | — |
 | SH-017 | 🟡 | **README / usage docs**: build & run instructions, supported commands and flags, known deviations from GNU coreutils, bonus feature list. | S | SH-005–SH-015 | — | — |
 
 ---
@@ -196,7 +196,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | D12 | `cp` | SH-013 | ✅ |
 | D13 | `mv` | SH-014 | ✅ |
 | D14 | `rm -r` | SH-015 | ✅ |
-| D15 | Audit checklist verified | SH-016 | 🟡 |
+| D15 | Audit checklist verified | SH-016 | ✅ |
 | B1 | Ctrl+C | SH-018 | 🟡 |
 | B2 | Prompt cwd | SH-019 | 🟡 |
 | B3 | History | SH-020 | 🟡 |
@@ -214,13 +214,13 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-All mandatory command tickets (SH-005–SH-015) are done. Next:
+Mandatory commands and the audit dry-run (SH-016) are done. Next:
 
-| Ticket | Unblocks |
-|--------|----------|
-| SH-016 | SH-017 |
+| Ticket | Notes |
+|--------|-------|
+| SH-017 | README / usage docs |
 
-SH-016 (audit dry-run) is now unblocked.
+Bonus track (SH-018+) may start now that SH-016 is green.
 
 ---
 
@@ -228,10 +228,10 @@ SH-016 (audit dry-run) is now unblocked.
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 15 |
+| ✅ Done | 16 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
-| 🟡 To Do | 9 |
+| 🟡 To Do | 8 |
 | ⬜ Backlog | 3 |
 
 | Priority | Count |
@@ -251,7 +251,7 @@ SH-016 (audit dry-run) is now unblocked.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Thirteen scheduled tickets remain (mostly bonus + QA/docs). The mandatory command set is complete — next audit-critical step is the dry-run (SH-016).
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Twelve scheduled tickets remain (docs + bonus). The mandatory command set and audit dry-run are complete — README (SH-017) and optional bonuses are next.
 
 ---
 

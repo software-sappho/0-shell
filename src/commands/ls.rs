@@ -467,9 +467,8 @@ fn local_broken_down(mtime: i64) -> CivilTime {
         tm_yday: i32,
         tm_isdst: i32,
         tm_gmtoff: isize,
-        tm_zone: *mut libc_char,
+        tm_zone: *mut i8,
     }
-    type libc_char = i8;
 
     unsafe extern "C" {
         fn localtime_r(timep: *const i64, result: *mut Tm) -> *mut Tm;
