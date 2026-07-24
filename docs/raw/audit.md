@@ -90,13 +90,13 @@ The use of external binaries or system calls that spawn them is strictly forbidd
 
 **Yes.** Two separate `mkdir` calls create two sibling directories.
 
-##### Create a document inside the `new_folder1` called `new_doc.txt` with some random text inside. Try to run the command `cp new_doc.txt ../folder2` to copy the document to the folder `new_folder2`.
+##### Create a document inside the `new_folder1` called `new_doc.txt` with some random text inside (`echo "some random text" > new_folder1/new_doc.txt`) . Try to run the command `cp new_doc.txt ../new_folder2` to copy the document to the folder `new_folder2`.
 
 ###### Can you confirm that the document `new_doc.txt` is inside the `new_folder2`?
 
-**Yes.** With cwd inside `new_folder1`, `cp new_doc.txt ../new_folder2` copies into that directory preserving the basename (audit path uses `new_folder2`; subject text sometimes says `folder2` — same idea).
+**Yes.** With cwd inside `new_folder1`, `cp new_doc.txt ../new_folder2` copies into that directory preserving the basename.
 
-##### Try to run the command `cat new_folder1/new_doc`. Do the same in your computer terminal.
+##### Try to run the command `cat new_folder1/new_doc.txt`. Do the same in your computer terminal.
 
 ###### Can you confirm that the output is the same in the project and in your computer terminal?
 
