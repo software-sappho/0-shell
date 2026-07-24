@@ -157,6 +157,7 @@ fn summary_text() -> String {
     }
     out.push_str("\nType `help name' for more information about each builtin.\n");
     out.push_str("Commands on one line may be chained with `;` (failures do not stop the rest).\n");
+    out.push_str("Connect builtins with `|` (each stage runs in-process via pipe+fork).\n");
     out.push_str("Tab completes builtin names and paths in an interactive TTY.\n");
     out
 }

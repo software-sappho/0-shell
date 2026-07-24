@@ -89,44 +89,84 @@ pub fn run() -> ! {
     }
 }
 
-/// Run one input line, possibly containing `;`-chained commands.
+/// Run one input line, possibly containing `;`-chained commands and `|` pipes.
 ///
-/// Each segment is tokenized and dispatched in order. A failing command does
-/// not abort the rest. Returns `Some(code)` when `exit` requests termination.
+/// Each `;` segment is run in order (a failure does not abort later ones).
+/// Within a segment, unquoted `|` builds a pipeline (SH-026). Returns
+/// `Some(code)` when `exit` requests termination of the main shell.
 fn run_line(line: &str, last_status: &mut i32) -> Option<i32> {
     for segment in parser::split_commands(line) {
         if segment.is_empty() {
             continue;
         }
 
-        let argv = match tokenize_with_status(segment, *last_status) {
+        if let Some(code) = run_segment(segment, last_status) {
+            return Some(code);
+        }
+    }
+    None
+}
+
+/// Run one `;`-separated segment, which may itself be a `|` pipeline.
+fn run_segment(segment: &str, last_status: &mut i32) -> Option<i32> {
+    let stages_raw = parser::split_pipeline(segment);
+    if stages_raw.iter().any(|s| s.is_empty()) {
+        print_err("0-shell: syntax error near unexpected token `|'");
+        *last_status = 2;
+        return None;
+    }
+
+    let mut stages: Vec<Vec<String>> = Vec::with_capacity(stages_raw.len());
+    for stage in stages_raw {
+        let argv = match tokenize_with_status(stage, *last_status) {
             Ok(argv) => argv,
             Err(err) => {
                 print_err(err.to_string());
                 *last_status = 1;
-                continue;
+                return None;
             }
         };
+        stages.push(argv);
+    }
 
+    if stages.len() == 1 {
+        let argv = &stages[0];
         if argv.is_empty() {
-            continue;
+            return None;
         }
+        return apply_dispatch(dispatch(argv), last_status);
+    }
 
-        match dispatch(&argv) {
-            ControlFlow::Exit(code) => return Some(code),
-            ControlFlow::Continue(Ok(())) => {
-                *last_status = 0;
-            }
-            ControlFlow::Continue(Err(err)) => {
-                print_err(err.to_string());
-                *last_status = match &err {
-                    crate::error::ShellError::NotFound(_) => 127,
-                    _ => 1,
-                };
-            }
+    // Multi-stage pipeline: fork + pipe; children already print errors.
+    match crate::pipeline::run(&stages) {
+        Ok(status) => {
+            *last_status = status;
+            None
+        }
+        Err(err) => {
+            print_err(err.to_string());
+            *last_status = 1;
+            None
         }
     }
-    None
+}
+
+fn apply_dispatch(flow: ControlFlow, last_status: &mut i32) -> Option<i32> {
+    match flow {
+        ControlFlow::Exit(code) => Some(code),
+        ControlFlow::Continue(Ok(())) => {
+            *last_status = 0;
+            None
+        }
+        ControlFlow::Continue(Err(err)) => {
+            print_err(err.to_string());
+            *last_status = match &err {
+                crate::error::ShellError::NotFound(_) => 127,
+                _ => 1,
+            };
+            None
+        }
+    }
 }
 
 /// Errors go to stderr; red when stderr is a TTY.
@@ -509,5 +549,13 @@ mod tests {
             tokenize_with_status("echo $?", status).unwrap(),
             vec!["echo", "127"]
         );
+    }
+
+    #[test]
+    fn empty_pipe_stage_is_syntax_error() {
+        // No fork — only the parser/syntax path.
+        let mut status = 0;
+        assert_eq!(run_line("echo a | | cat", &mut status), None);
+        assert_eq!(status, 2);
     }
 }

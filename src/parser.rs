@@ -8,6 +8,7 @@
 //! quotes). Unknown names expand to the empty string.
 //!
 //! Unquoted `;` splits a line into sequential commands (SH-024).
+//! Unquoted `|` splits a segment into a pipeline (SH-026).
 
 use std::env;
 
@@ -18,6 +19,18 @@ use crate::error::ShellError;
 /// Empty segments (e.g. from `;;` or a trailing `;`) are retained as empty
 /// strings so the caller can treat them as no-ops.
 pub fn split_commands(line: &str) -> Vec<&str> {
+    split_on_unquoted(line, ';')
+}
+
+/// Split a command segment on unquoted `|` into pipeline stages.
+///
+/// Empty stages (e.g. from `||` or a trailing `|`) are retained so the caller
+/// can report a syntax error.
+pub fn split_pipeline(segment: &str) -> Vec<&str> {
+    split_on_unquoted(segment, '|')
+}
+
+fn split_on_unquoted(line: &str, delimiter: char) -> Vec<&str> {
     let mut segments = Vec::new();
     let mut start = 0usize;
     let mut in_single = false;
@@ -52,7 +65,7 @@ pub fn split_commands(line: &str) -> Vec<&str> {
                 in_double = true;
                 i += ch_len;
             }
-            ';' => {
+            c if c == delimiter => {
                 segments.push(line[start..i].trim());
                 i += ch_len;
                 start = i;
@@ -379,5 +392,36 @@ mod tests {
     fn no_semicolon_is_one_segment() {
         assert_eq!(split_commands("echo hello"), vec!["echo hello"]);
         assert_eq!(split_commands(""), vec![""]);
+    }
+
+    #[test]
+    fn split_on_unquoted_pipe() {
+        assert_eq!(split_pipeline("echo a | cat"), vec!["echo a", "cat"]);
+        assert_eq!(
+            split_pipeline("echo hello|cat|cat"),
+            vec!["echo hello", "cat", "cat"]
+        );
+    }
+
+    #[test]
+    fn pipe_inside_quotes_is_literal() {
+        assert_eq!(
+            split_pipeline(r#"echo "a|b" | cat"#),
+            vec![r#"echo "a|b""#, "cat"]
+        );
+        assert_eq!(split_pipeline("echo 'a|b'"), vec!["echo 'a|b'"]);
+    }
+
+    #[test]
+    fn empty_stages_from_double_or_trailing_pipe() {
+        assert_eq!(split_pipeline("echo a || cat"), vec!["echo a", "", "cat"]);
+        assert_eq!(split_pipeline("echo a |"), vec!["echo a", ""]);
+        assert_eq!(split_pipeline("|cat"), vec!["", "cat"]);
+    }
+
+    #[test]
+    fn no_pipe_is_one_stage() {
+        assert_eq!(split_pipeline("echo hello"), vec!["echo hello"]);
+        assert_eq!(split_pipeline(""), vec![""]);
     }
 }
