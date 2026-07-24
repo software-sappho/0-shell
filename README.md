@@ -2,11 +2,16 @@
 
 A minimalist Unix shell written in Rust. It implements its own REPL, argument
 parser, and builtins (`echo`, `cd`, `pwd`, `ls`, `cat`, `cp`, `rm`, `mv`,
-`mkdir`, `exit`) on top of `std::fs` / `std::io` — **never** by shelling out
-to `sh`, `bash`, or coreutils.
+`mkdir`, `help`, `exit`) on top of `std::fs` / `std::io` — **never** by
+shelling out to `sh`, `bash`, or coreutils.
 
 > Instant audit failure: calling `std::process::Command`, `exec*`, or any
-> external binary from this project.
+> external binary from this project. `fork` + `pipe` + `dup2` are used only so
+> the same in-process builtins can run on both ends of a pipeline or with
+> file redirection.
+
+Subject / checklist: [docs/requirements.md](./docs/requirements.md),
+[docs/audit.md](./docs/audit.md).
 
 ## Requirements
 
@@ -26,6 +31,11 @@ cargo build --release
 Package name in `Cargo.toml` is `zero-shell` (Cargo forbids a leading digit).
 A `[[bin]]` section names the binary `0-shell`.
 
+```sh
+cargo test   # unit + integration tests
+cargo fmt
+```
+
 ## Run
 
 ```sh
@@ -34,8 +44,9 @@ A `[[bin]]` section names the binary `0-shell`.
 ./target/release/0-shell
 ```
 
-You get a `$ ` prompt (on stderr). Type a command and press Enter. Ctrl+D
-(EOF) exits with status 0.
+You get a prompt like `~/0-shell $ ` on stderr (`$HOME` collapsed to `~`).
+Type a command and press Enter. Ctrl+D (EOF) exits with status 0. Ctrl+C
+cancels the current line and reprints the prompt (does not exit).
 
 ### Quick smoke test
 
@@ -51,7 +62,7 @@ On Linux/WSL, after `cargo build`:
 ./scripts/audit-dry-run.sh
 ```
 
-Results from the last green run: [AUDIT-DRY-RUN.md](./AUDIT-DRY-RUN.md).
+Results from the last green run: [docs/AUDIT-DRY-RUN.md](./docs/AUDIT-DRY-RUN.md).
 
 ## Supported commands
 
@@ -109,6 +120,34 @@ something else
 
 Unterminated quotes produce a parse error and return to the prompt.
 
+## Shell features
+
+| Feature | Behaviour |
+|---------|-----------|
+| Env vars | `$VAR`, `${VAR}`, and `$?` expand outside single quotes (and inside double quotes). |
+| Chaining | Unquoted `;` runs commands left to right; a failure does not abort later ones. |
+| Piping | Unquoted `\|` connects builtins with `pipe` + `fork` (in-process on both ends). |
+| Redirection | Unquoted `<` / `>` / `>>` reopen stdin/stdout onto files via `dup2`. |
+| History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
+| Completion | Tab completes builtins (command position) and paths in a TTY. |
+| Prompt | `~/path $ ` with `$HOME` → `~`, updates after `cd`. |
+| Signals | Ctrl+C cancels the line and reprints the prompt. |
+
+Examples:
+
+```text
+$ echo hello | cat
+hello
+$ echo hi > out.txt
+$ cat < out.txt
+hi
+$ echo a; echo b
+a
+b
+$ echo $HOME
+/home/…
+```
+
 ## Known deviations from GNU coreutils / bash
 
 These are intentional scope limits or small behavioural differences:
@@ -120,16 +159,11 @@ These are intentional scope limits or small behavioural differences:
 | `cp` | No `-r` / `-R`; directory sources are refused. Exactly two operands. |
 | `mv` | Exactly two operands (no multi-source form). |
 | `rm` | No `-f` / `-i`; only `-r` / `-R`. |
-| `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R` or ACL `+` in the mode string. When stdout is a TTY, directories/executables/symlinks are colored (see B5). |
+| `ls` | Default listing is one-per-line (like non-TTY GNU `ls`), not columnar. No `-R` or ACL `+` in the mode string. |
 | `cd` | No `cd -` (previous directory). `~user` is not expanded. |
-| Signals | Ctrl+C cancels the current line and reprints the prompt (does not exit). |
-| Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
-| Chaining | Unquoted `;` runs commands sequentially; a failure does not abort later ones. |
-| Piping | Unquoted `\|` connects builtins with `pipe`+`fork` (in-process on both ends). No `\|\|` / `\|&`. |
-| Redirection | Unquoted `<` / `>` / `>>` reopen stdin/stdout onto files via `dup2`. No `2>` / `&>` / heredocs. |
-| Completion | Tab completes builtins (command position) and paths (arguments / path-like tokens) in a TTY. |
-| Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
-| History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
+| Piping | No `\|\|` / `\|&` / `pipefail`. |
+| Redirection | No `2>` / `&>` / heredocs. |
+| Prompt | Interactive prompt includes the cwd (bonus), not bare `$ ` alone. |
 
 Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), this shell aims for byte-for-byte parity with bash/coreutils under `LANG=C`.
 
@@ -148,29 +182,38 @@ src/
   redir.rs         File redirection (`dup2` onto stdin/stdout)
   dispatch.rs      Builtin table
   error.rs         ShellError
+  color.rs         ANSI helpers for `ls` / errors
   commands/        echo, cd, pwd, ls, cat, cp, mv, rm, mkdir, help, exit
 scripts/
   audit-dry-run.sh Automated checklist vs bash
+docs/
+  requirements.md  Subject brief
+  audit.md         Audit questionnaire (answered)
+  AUDIT-DRY-RUN.md Last automated dry-run results
+  BOARD.md         Sprint board
+  TICKET-TRACKER.md Ticket coverage
+  DEPENDENCIES.md  Ticket dependency map
+tests/
+  pipeline.rs      Integration tests for `|`
+  redir.rs         Integration tests for `<` / `>` / `>>`
 ```
 
-Board / tracker: [BOARD.md](./BOARD.md), [TICKET-TRACKER.md](./TICKET-TRACKER.md),
-[DEPENDENCIES.md](./DEPENDENCIES.md).
+Board / tracker: [docs/BOARD.md](./docs/BOARD.md),
+[docs/TICKET-TRACKER.md](./docs/TICKET-TRACKER.md),
+[docs/DEPENDENCIES.md](./docs/DEPENDENCIES.md).
 
-## Bonus features (optional)
+## Bonus features
 
-Not required for the mandatory audit. Do not start these until SH-016 is green
-(already done).
-
-| ID | Feature | Ticket |
+| ID | Feature | Status |
 |----|---------|--------|
-| B1 | Ctrl+C (SIGINT) without exiting | SH-018 ✅ |
-| B2 | Current directory in the prompt | SH-019 ✅ |
-| B3 | Command history | SH-020 ✅ |
-| B4 | Environment variables (`$HOME`, `$PATH`, …) | SH-021 ✅ |
-| B5 | Colorized `ls` / errors | SH-022 ✅ |
-| B6 | `help` command | SH-023 ✅ |
-| B7 | Command chaining with `;` | SH-024 ✅ |
-| B8 | Completion / pipes / redirection | SH-025 ✅ · SH-026 ✅ · SH-027 ✅ |
+| B1 | Ctrl+C (SIGINT) without exiting | ✅ |
+| B2 | Current directory in the prompt | ✅ |
+| B3 | Command history | ✅ |
+| B4 | Environment variables (`$HOME`, `$PATH`, …) | ✅ |
+| B5 | Colorized `ls` / errors | ✅ |
+| B6 | `help` command | ✅ |
+| B7 | Command chaining with `;` | ✅ |
+| B8 | Tab completion, pipes, redirection | ✅ |
 
 ## License
 
