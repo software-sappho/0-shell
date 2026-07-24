@@ -217,4 +217,4 @@ Board / tracker: [docs/BOARD.md](./docs/BOARD.md),
 
 ## License
 
-Project coursework — follow your school’s submission rules.
+[MIT](./LICENSE) — Copyright (c) 2026 software-sappho.
