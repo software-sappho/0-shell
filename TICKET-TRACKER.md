@@ -6,7 +6,7 @@
 
 # sh Ticket Tracker
 
-Last refreshed: 2026-07-24 (SH-026 done — Piping `|`)
+Last refreshed: 2026-07-24 (SH-027 done — Redirection `>` `<`)
 
 > **Board vs tracker**: [BOARD.md](./BOARD.md) is the live sprint board (who is on what). This file is the full requirements-style tracker: every ticket, deps, acceptance summary, and coverage by epic.
 
@@ -162,7 +162,7 @@ should update its Assignee cell in the tables below.
 |----|--------|--------|------|------|----------|----------|
 | SH-025 | ✅ | **Auto-completion**: Tab completion for command names and paths (needs raw-mode input from SH-020). | L | SH-020 | B8 | — |
 | SH-026 | ✅ | **Piping (`\|`)**: `fork` + `pipe` + in-process command execution on both ends. | L | SH-024 | B8 | — |
-| SH-027 | ⬜ | **Redirection (`>`, `<`)**: reopen stdin/stdout onto files via `dup2`. | L | SH-026 | B8 | — |
+| SH-027 | ✅ | **Redirection (`>`, `<`)**: reopen stdin/stdout onto files via `dup2`. | L | SH-026 | B8 | — |
 
 ---
 
@@ -204,7 +204,7 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 | B5 | Colors | SH-022 | ✅ |
 | B6 | `help` | SH-023 | ✅ |
 | B7 | Chaining `;` | SH-024 | ✅ |
-| B8 | Completion / pipes / redirection | SH-025 ✅, SH-026 ✅, SH-027 | ⬜ |
+| B8 | Completion / pipes / redirection | SH-025 ✅, SH-026 ✅, SH-027 ✅ | ✅ |
 
 > Note for D15/SH-016: the `$ ` prompt (and the cosmetic EOF newline) print to
 > stderr, not stdout, so automated audit diffs can compare stdout against real
@@ -214,25 +214,25 @@ Full dependency graph: [DEPENDENCIES.md](./DEPENDENCIES.md).
 
 ## 6) Immediate Next Work Queue
 
-Mandatory path through docs is complete. All scheduled bonuses (SH-018–SH-024) are ✅.
+Mandatory path through docs is complete. All bonuses (SH-018–SH-027) are ✅.
 
 | Ticket | Notes |
 |--------|-------|
-| SH-027 | Redirection `>` `<` |
+| _none_ | Backlog cleared |
 
-SH-018–SH-026 are ✅.
+SH-018–SH-027 are ✅.
 
 ---
 
-## Total: 26 completed tickets (+1 backlog)
+## Total: 27 completed tickets (+0 backlog)
 
 | Status | Count |
 |--------|-------|
-| ✅ Done | 26 |
+| ✅ Done | 27 |
 | 🔵 In Review | 0 |
 | 🟢 In Progress | 0 |
 | 🟡 To Do | 0 |
-| ⬜ Backlog | 1 |
+| ⬜ Backlog | 0 |
 
 | Priority | Count |
 |----------|-------|
@@ -251,7 +251,7 @@ SH-018–SH-026 are ✅.
 
 ## Load balance note
 
-The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. Scheduled tickets through SH-026 are done; one backlog bonus remains (redirection).
+The foundation was a serial gate (SH-001 → SH-002/SH-003 → SH-004) and it's now cleared. All tickets through SH-027 are done — no backlog remains.
 
 ---
 

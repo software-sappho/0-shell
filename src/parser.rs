@@ -9,10 +9,36 @@
 //!
 //! Unquoted `;` splits a line into sequential commands (SH-024).
 //! Unquoted `|` splits a segment into a pipeline (SH-026).
+//! Unquoted `<` / `>` / `>>` are emitted as their own tokens (SH-027).
 
 use std::env;
 
 use crate::error::ShellError;
+
+/// File redirections stripped from a stage's token list.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct Redirections {
+    pub stdin: Option<String>,
+    pub stdout: Option<StdoutRedir>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StdoutRedir {
+    Truncate(String),
+    Append(String),
+}
+
+impl StdoutRedir {
+    pub fn path(&self) -> &str {
+        match self {
+            StdoutRedir::Truncate(p) | StdoutRedir::Append(p) => p,
+        }
+    }
+
+    pub fn append(&self) -> bool {
+        matches!(self, StdoutRedir::Append(_))
+    }
+}
 
 /// Split `line` on unquoted `;` into command segments (whitespace-trimmed).
 ///
@@ -128,6 +154,23 @@ pub fn tokenize_with_status(line: &str, last_status: i32) -> Result<Vec<String>,
                 tokens.push(token);
             }
             i += 1;
+        } else if c == '>' {
+            if let Some(token) = current.take() {
+                tokens.push(token);
+            }
+            if i + 1 < chars.len() && chars[i + 1] == '>' {
+                tokens.push(">>".to_string());
+                i += 2;
+            } else {
+                tokens.push(">".to_string());
+                i += 1;
+            }
+        } else if c == '<' {
+            if let Some(token) = current.take() {
+                tokens.push(token);
+            }
+            tokens.push("<".to_string());
+            i += 1;
         } else {
             current.get_or_insert_with(String::new).push(c);
             i += 1;
@@ -150,6 +193,58 @@ pub fn tokenize_with_status(line: &str, last_status: i32) -> Result<Vec<String>,
     }
 
     Ok(tokens)
+}
+
+/// Pull `<` / `>` / `>>` operators (and their paths) out of a token list.
+///
+/// Remaining tokens are the command argv. Multiple redirects to the same fd
+/// keep the last one (bash). A redirect operator as the final token, or one
+/// followed by another operator, is a syntax error.
+pub fn extract_redirections(
+    tokens: Vec<String>,
+) -> Result<(Vec<String>, Redirections), ShellError> {
+    let mut argv = Vec::new();
+    let mut redirs = Redirections::default();
+    let mut i = 0usize;
+
+    while i < tokens.len() {
+        let tok = &tokens[i];
+        let kind = match tok.as_str() {
+            "<" => Some(RedirKind::In),
+            ">" => Some(RedirKind::Out),
+            ">>" => Some(RedirKind::Append),
+            _ => None,
+        };
+
+        if let Some(kind) = kind {
+            i += 1;
+            let path = tokens.get(i).ok_or_else(|| {
+                ShellError::Parse("0-shell: syntax error near unexpected token `newline'".into())
+            })?;
+            if matches!(path.as_str(), "<" | ">" | ">>") {
+                return Err(ShellError::Parse(format!(
+                    "0-shell: syntax error near unexpected token `{path}'"
+                )));
+            }
+            match kind {
+                RedirKind::In => redirs.stdin = Some(path.clone()),
+                RedirKind::Out => redirs.stdout = Some(StdoutRedir::Truncate(path.clone())),
+                RedirKind::Append => redirs.stdout = Some(StdoutRedir::Append(path.clone())),
+            }
+            i += 1;
+        } else {
+            argv.push(tokens[i].clone());
+            i += 1;
+        }
+    }
+
+    Ok((argv, redirs))
+}
+
+enum RedirKind {
+    In,
+    Out,
+    Append,
 }
 
 /// Expand starting at `chars[i] == '$'`. Returns the next index to read.
@@ -423,5 +518,59 @@ mod tests {
     fn no_pipe_is_one_stage() {
         assert_eq!(split_pipeline("echo hello"), vec!["echo hello"]);
         assert_eq!(split_pipeline(""), vec![""]);
+    }
+
+    #[test]
+    fn redirects_are_separate_tokens() {
+        assert_eq!(tok("echo hello > out"), vec!["echo", "hello", ">", "out"]);
+        assert_eq!(tok("cat < in"), vec!["cat", "<", "in"]);
+        assert_eq!(tok("echo a >> log"), vec!["echo", "a", ">>", "log"]);
+    }
+
+    #[test]
+    fn redirects_split_adjacent_words() {
+        assert_eq!(tok("echo>out"), vec!["echo", ">", "out"]);
+        assert_eq!(tok("cat<in"), vec!["cat", "<", "in"]);
+        assert_eq!(tok("echo>>log"), vec!["echo", ">>", "log"]);
+    }
+
+    #[test]
+    fn redirect_inside_quotes_is_literal() {
+        assert_eq!(tok(r#"echo "a>b""#), vec!["echo", "a>b"]);
+        assert_eq!(tok("echo 'a<b'"), vec!["echo", "a<b"]);
+    }
+
+    #[test]
+    fn extract_stdout_and_stdin() {
+        let (argv, redirs) = extract_redirections(tok("echo hi > out < in")).expect("extract");
+        assert_eq!(argv, vec!["echo", "hi"]);
+        assert_eq!(redirs.stdin.as_deref(), Some("in"));
+        assert_eq!(
+            redirs.stdout,
+            Some(StdoutRedir::Truncate("out".to_string()))
+        );
+    }
+
+    #[test]
+    fn extract_append() {
+        let (argv, redirs) = extract_redirections(tok("echo x >> log")).expect("extract");
+        assert_eq!(argv, vec!["echo", "x"]);
+        assert_eq!(redirs.stdout, Some(StdoutRedir::Append("log".to_string())));
+    }
+
+    #[test]
+    fn extract_missing_path_is_error() {
+        assert!(matches!(
+            extract_redirections(tok("echo >")),
+            Err(ShellError::Parse(_))
+        ));
+    }
+
+    #[test]
+    fn extract_operator_as_path_is_error() {
+        assert!(matches!(
+            extract_redirections(tok("echo > > file")),
+            Err(ShellError::Parse(_))
+        ));
     }
 }

@@ -1,18 +1,26 @@
 //! Pipeline execution via `pipe` + `fork` + in-process builtins (SH-026).
 //!
 //! Each stage runs the shell's own dispatch table after `dup2`-ing pipe ends
-//! onto stdin/stdout. No `exec*`, no `std::process::Command`, no external
-//! binaries — children `_exit` after the builtin returns.
+//! onto stdin/stdout, then optional file redirections (SH-027). No `exec*`,
+//! no `std::process::Command` — children `_exit` after the builtin returns.
 //!
-//! Call only from a single-threaded context (the REPL). Forking while other
-//! threads hold Rust stdio locks can deadlock the child.
+//! Call only from a single-threaded context (the REPL).
 
 use std::io::{self, Write};
 
 use crate::color;
 use crate::dispatch::{dispatch, ControlFlow};
 use crate::error::ShellError;
+use crate::parser::Redirections;
+use crate::redir;
 use crate::tty;
+
+/// One pipeline stage: argv plus optional file redirections.
+#[derive(Debug, Clone)]
+pub struct Stage {
+    pub argv: Vec<String>,
+    pub redirs: Redirections,
+}
 
 /// Run a multi-stage pipeline. Caller must pass at least two stages.
 ///
@@ -20,7 +28,7 @@ use crate::tty;
 /// `pipefail`). Children print their own errors; the parent only reports
 /// failures from `pipe`/`fork` setup. `exit` inside a pipeline only
 /// terminates that forked stage.
-pub fn run(stages: &[Vec<String>]) -> Result<i32, ShellError> {
+pub fn run(stages: &[Stage]) -> Result<i32, ShellError> {
     #[cfg(unix)]
     {
         unix::run(stages)
@@ -47,17 +55,16 @@ mod unix {
         fn _exit(status: i32) -> !;
     }
 
-    pub fn run(stages: &[Vec<String>]) -> Result<i32, ShellError> {
+    pub fn run(stages: &[Stage]) -> Result<i32, ShellError> {
         debug_assert!(stages.len() >= 2);
 
-        // Drop any buffered parent output before cloning the address space.
         let _ = io::stdout().flush();
         let _ = io::stderr().flush();
 
         let mut pids: Vec<i32> = Vec::with_capacity(stages.len());
         let mut prev_read: Option<i32> = None;
 
-        for (i, argv) in stages.iter().enumerate() {
+        for (i, stage) in stages.iter().enumerate() {
             let is_last = i + 1 == stages.len();
             let mut fds = [0i32; 2];
             if !is_last {
@@ -84,12 +91,18 @@ mod unix {
             }
 
             if pid == 0 {
-                // Child: never return to the parent REPL / test harness.
                 child_setup_stdio(prev_read, if is_last { None } else { Some(fds) });
-                child_run_and_exit(argv);
+                // File redirects override the pipe on the same fd (bash).
+                if let Err(err) = redir::apply_in_child(&stage.redirs) {
+                    let msg = err.to_string();
+                    if !msg.is_empty() {
+                        eprintln!("{}", color::paint_error(&msg, tty::stderr_is_tty()));
+                    }
+                    unsafe { _exit(1) }
+                }
+                child_run_and_exit(&stage.argv);
             }
 
-            // Parent: close ends we don't need so writers see EOF when done.
             pids.push(pid);
             if let Some(r) = prev_read {
                 unsafe {
@@ -189,7 +202,6 @@ mod unix {
     }
 
     fn decode_wait_status(status: i32) -> i32 {
-        // Linux wait status layout (same as the W* macros in bits/waitstatus.h).
         if status & 0x7f == 0 {
             (status >> 8) & 0xff
         } else if (((status & 0x7f) + 1) as i8) >> 1 > 0 {

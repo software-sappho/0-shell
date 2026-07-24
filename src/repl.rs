@@ -107,7 +107,8 @@ fn run_line(line: &str, last_status: &mut i32) -> Option<i32> {
     None
 }
 
-/// Run one `;`-separated segment, which may itself be a `|` pipeline.
+/// Run one `;`-separated segment, which may itself be a `|` pipeline with
+/// `<` / `>` / `>>` redirections on each stage.
 fn run_segment(segment: &str, last_status: &mut i32) -> Option<i32> {
     let stages_raw = parser::split_pipeline(segment);
     if stages_raw.iter().any(|s| s.is_empty()) {
@@ -116,28 +117,31 @@ fn run_segment(segment: &str, last_status: &mut i32) -> Option<i32> {
         return None;
     }
 
-    let mut stages: Vec<Vec<String>> = Vec::with_capacity(stages_raw.len());
+    let mut stages: Vec<crate::pipeline::Stage> = Vec::with_capacity(stages_raw.len());
     for stage in stages_raw {
-        let argv = match tokenize_with_status(stage, *last_status) {
-            Ok(argv) => argv,
+        let tokens = match tokenize_with_status(stage, *last_status) {
+            Ok(tokens) => tokens,
             Err(err) => {
                 print_err(err.to_string());
                 *last_status = 1;
                 return None;
             }
         };
-        stages.push(argv);
+        let (argv, redirs) = match parser::extract_redirections(tokens) {
+            Ok(pair) => pair,
+            Err(err) => {
+                print_err(err.to_string());
+                *last_status = 2;
+                return None;
+            }
+        };
+        stages.push(crate::pipeline::Stage { argv, redirs });
     }
 
     if stages.len() == 1 {
-        let argv = &stages[0];
-        if argv.is_empty() {
-            return None;
-        }
-        return apply_dispatch(dispatch(argv), last_status);
+        return run_simple(&stages[0], last_status);
     }
 
-    // Multi-stage pipeline: fork + pipe; children already print errors.
     match crate::pipeline::run(&stages) {
         Ok(status) => {
             *last_status = status;
@@ -149,6 +153,35 @@ fn run_segment(segment: &str, last_status: &mut i32) -> Option<i32> {
             None
         }
     }
+}
+
+fn run_simple(stage: &crate::pipeline::Stage, last_status: &mut i32) -> Option<i32> {
+    let has_redir = stage.redirs.stdin.is_some() || stage.redirs.stdout.is_some();
+    if stage.argv.is_empty() && !has_redir {
+        return None;
+    }
+
+    if has_redir {
+        let _guard = match crate::redir::Guard::apply(&stage.redirs) {
+            Ok(g) => g,
+            Err(err) => {
+                print_err(err.to_string());
+                *last_status = 1;
+                return None;
+            }
+        };
+        if stage.argv.is_empty() {
+            // bash: bare `>file` creates/truncates and succeeds.
+            *last_status = 0;
+            return None;
+        }
+        return apply_dispatch(dispatch(&stage.argv), last_status);
+    }
+
+    if stage.argv.is_empty() {
+        return None;
+    }
+    apply_dispatch(dispatch(&stage.argv), last_status)
 }
 
 fn apply_dispatch(flow: ControlFlow, last_status: &mut i32) -> Option<i32> {

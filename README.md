@@ -126,10 +126,10 @@ These are intentional scope limits or small behavioural differences:
 | Env / `$VAR` | `$VAR`, `${VAR}`, and `$?` expand outside single quotes. |
 | Chaining | Unquoted `;` runs commands sequentially; a failure does not abort later ones. |
 | Piping | Unquoted `\|` connects builtins with `pipe`+`fork` (in-process on both ends). No `\|\|` / `\|&`. |
+| Redirection | Unquoted `<` / `>` / `>>` reopen stdin/stdout onto files via `dup2`. No `2>` / `&>` / heredocs. |
 | Completion | Tab completes builtins (command position) and paths (arguments / path-like tokens) in a TTY. |
 | Prompt | Shows `~/path $ ` with `$HOME` collapsed to `~` (updates after `cd`). |
 | History | ↑/↓ recall in a TTY (raw mode); persisted to `~/.0shell_history`. |
-| Redirection | `>` / `<` not implemented yet (SH-027 backlog). |
 
 Where the audit compares terminal output (`echo`, `cat`, `pwd`, plain `ls`), this shell aims for byte-for-byte parity with bash/coreutils under `LANG=C`.
 
@@ -143,8 +143,9 @@ src/
   complete.rs      Tab completion (builtins + paths)
   tty.rs           Raw mode (termios) for interactive input
   signals.rs       SIGINT handler (Ctrl+C)
-  parser.rs        Tokenizer (quotes), `;` / `|` splitting
+  parser.rs        Tokenizer (quotes), `;` / `|` splitting, `<`/`>`/`>>`
   pipeline.rs      Pipe execution (`pipe` + `fork` + builtins)
+  redir.rs         File redirection (`dup2` onto stdin/stdout)
   dispatch.rs      Builtin table
   error.rs         ShellError
   commands/        echo, cd, pwd, ls, cat, cp, mv, rm, mkdir, help, exit
@@ -169,7 +170,7 @@ Not required for the mandatory audit. Do not start these until SH-016 is green
 | B5 | Colorized `ls` / errors | SH-022 ✅ |
 | B6 | `help` command | SH-023 ✅ |
 | B7 | Command chaining with `;` | SH-024 ✅ |
-| B8 | Completion / pipes / redirection | SH-025 ✅ · SH-026 ✅ · SH-027 |
+| B8 | Completion / pipes / redirection | SH-025 ✅ · SH-026 ✅ · SH-027 ✅ |
 
 ## License
 
